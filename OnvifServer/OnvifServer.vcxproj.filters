@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.c" />
+    <ClCompile Include="bm\base64.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\hqueue.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\linked_list.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_accessrules.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_analytics.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_api.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_cfg.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_cm.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_credential.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_device.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_deviceio.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_doorcontrol.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_event.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_image.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_media.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_media2.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_pkt.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_probe.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_ptz.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_receiver.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_recording.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_schedule.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_thermal.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_timer.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\onvif_utils.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\ppstack.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\rfc_md5.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\sha1.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\sys_buf.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\sys_log.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\sys_os.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\util.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\word_analyse.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\soap.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="onvif\soap_parser.c">
+      <Filter>onvif</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\hxml.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="bm\xml_node.c">
+      <Filter>bm</Filter>
+    </ClCompile>
+    <ClCompile Include="http\http_auth.c">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="http\http_cln.c">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="http\http_parse.c">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="http\http_srv.c">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="http\httpd.c">
+      <Filter>http</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="bm">
+      <UniqueIdentifier>{2fffd6fa-3be3-4159-8174-4965be7b4d4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="onvif">
+      <UniqueIdentifier>{111650d1-ddb6-47cd-a3ad-276866b11d8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="http">
+      <UniqueIdentifier>{e59f3b73-0236-4dc3-9f6e-f96e8dba5837}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
