@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OnvifServer", "OnvifServer\OnvifServer.vcxproj", "{74FA5931-2AB8-480E-B455-027B52BE4E38}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OnvifServerProfileS", "OnvifServer\OnvifServerProfileS.vcxproj", "{D53BA4B6-76BE-41F1-8DA3-B5B970223268}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Debug|Win32.ActiveCfg = Debug|Win32
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Debug|Win32.Build.0 = Debug|Win32
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Debug|x64.ActiveCfg = Debug|x64
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Debug|x64.Build.0 = Debug|x64
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Release|Win32.ActiveCfg = Release|Win32
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Release|Win32.Build.0 = Release|Win32
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Release|x64.ActiveCfg = Release|x64
+		{74FA5931-2AB8-480E-B455-027B52BE4E38}.Release|x64.Build.0 = Release|x64
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Debug|Win32.Build.0 = Debug|Win32
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Debug|x64.ActiveCfg = Debug|x64
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Debug|x64.Build.0 = Debug|x64
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Release|Win32.ActiveCfg = Release|Win32
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Release|Win32.Build.0 = Release|Win32
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Release|x64.ActiveCfg = Release|x64
+		{D53BA4B6-76BE-41F1-8DA3-B5B970223268}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
