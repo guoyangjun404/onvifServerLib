@@ -1546,6 +1546,7 @@ int build_ImageSettings_xml(char * p_buf, int mlen)
 		}
 		offset += snprintf(p_buf+offset, mlen-offset, "</tt:ThermalSettings>");	
 		
+		//Dula的设置数据
 		if ( g_onvif_cfg.ImagingSettings.DulaInformationFlag ){
 			offset += snprintf(p_buf+offset, mlen-offset, "<tt:DulaInfoSettings>");
 			offset += snprintf(p_buf+offset, mlen-offset, "<tt:Focal>%d</tt:Focal>", g_onvif_cfg.ImagingSettings.DulaInfo.focal);

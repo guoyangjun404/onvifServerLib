@@ -601,23 +601,22 @@ void onvif_parse_cfg(char * xml_buff, int rlen)
 		g_onvif_cfg.need_auth = atoi(p_need_auth->data);
 	}
 
-	p_log_enable = xml_node_get(p_node, "log_enable");
+	/* p_log_enable = xml_node_get(p_node, "log_enable");
 	if (p_log_enable && p_log_enable->data)
 	{
 		// g_onvif_cfg.log_enable = atoi(p_log_enable->data);
-	}
+	} */
 	
-	p_information = xml_node_get(p_node, "information");
+	/* p_information = xml_node_get(p_node, "information");	  //设备信息
 	if (p_information)
 	{
 		onvif_parse_information_cfg(p_information);
-	}
-
+	} */
 
 ////// add by xieqingpu
 	int ret;
 	CONFIG_Information devInfo;
-	memset(&devInfo, 0, sizeof(CONFIG_Information));
+	memset(&devInfo, 0, sizeof(CONFIG_Information));	//设备信息
 
     ret = onvif_get_devinfo(&devInfo);
 	if ( ret == 0)

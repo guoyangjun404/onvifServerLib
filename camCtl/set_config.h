@@ -128,22 +128,31 @@ typedef struct
 } CONFIG_Scopes;   
 /////
 
+
 typedef struct
 {
-	int userPalette;               
-	int wideDynamic;     
-	int orgData;      
-    int actime;     
+	float saturation;         //色饱和度       
+	float contrast;             //对比度
+	float brightness;         //亮度补偿 
+    float sharp;                   //清晰度 (锐度)
+} ImgParam_t;
+
+typedef struct
+{
+	int userPalette;             //色板  
+	int wideDynamic;        //宽动态
+	int orgData;                    //数据源
+    int actime;                      //自动校正间隔
 } ThermalParam1_t;
 
 typedef struct
 {
-	float emissivity;               
-	float distance;     
-    float humidity;
-	float correction;      
-    float reflection; 
-    float amb;
+	float emissivity;           //发射率    
+	float distance;               //距离
+    float humidity;             //湿度
+	float correction;           //修正
+    float reflection;            //反射温度
+    float amb;                      //环境温度
 } ThermalParam2_t;
 
 typedef struct
@@ -275,18 +284,24 @@ void gotoPtzPreset(unsigned short location);
 void focusMove(float zoom);
 
 
+
 /*********************************************
-* FuncName: setImgParam       
-* Describe:  摄像头参数设置
+* FuncName: getImgParam       
+* Describe:  获取 摄像头参数
 * Params  :  参数数据  >0 时才有效设置，<= 0 表示没有设置                             
-* [OUT]      
-*    saturation : 色饱和度 
-*    contrast : 对比度
-*    brightness : 亮度补偿
-*    sharp : 清晰度 (锐度)
+* [IN]      
 * Return  :                                                  
 **********************************************/
-void setImgParam(float saturation,  float contrast, float brightness,float sharp);
+void getImgParam(ImgParam_t *imgParams);
+
+/*********************************************
+* FuncName: setImgParam       
+* Describe:  设置 摄像头参数
+* Params  :  参数数据  >0 时才有效设置，<= 0 表示没有设置                             
+* [OUT]      
+* Return  :                                                  
+**********************************************/
+void setImgParam(ImgParam_t *imgParams);
 
 
 /*********************************************
@@ -294,10 +309,6 @@ void setImgParam(float saturation,  float contrast, float brightness,float sharp
 * Describe:  获取 热成像参数配置_1 , 获取:色板、宽动态、亮度补偿、清晰度 (锐度)
 * Params  :                                
 * [IN]      
-*    userPalette : 色板
-*    wideDynamic : 宽动态
-*    orgData : 数据源
-*    actime : 自动校正间隔
 * Return  :                              
 **********************************************/
 void getThermalParam1(ThermalParam1_t *thermalParam1);
@@ -307,25 +318,15 @@ void getThermalParam1(ThermalParam1_t *thermalParam1);
 * Describe:  热成像参数配置设置_1 , 设置:色板、宽动态、亮度补偿、清晰度 (锐度)
 * Params  :                                
 * [OUT]      
-*    userPalette : 色板
-*    wideDynamic : 宽动态
-*    orgData : 数据源
-*    actime : 自动校正间隔
 * Return  :                              
 **********************************************/
 void setThermalParam1(ThermalParam1_t *thermalParam1);
 
 /*********************************************
-* FuncName: setThermalParam2       
+* FuncName: getThermalParam2       
 * Describe:  获取 热成像参数配置设置_1 , 获取:发射率、距离、湿度、修正、反射温度、环境温度
 * Params  :                                
 * [IN]      
-*    emissivity : 发射率
-*    distance : 距离
-*    humidity : 湿度
-*    correction : 修正
-*    reflection :反射温度
-*    amb : 环境温度
 * Return  :                              
 **********************************************/
 void getThermalParam2(ThermalParam2_t *thermalParam2);
@@ -335,12 +336,6 @@ void getThermalParam2(ThermalParam2_t *thermalParam2);
 * Describe:  热成像参数配置设置_1 , 设置:发射率、距离、湿度、修正、反射温度、环境温度
 * Params  :                                
 * [OUT]      
-*    emissivity : 发射率
-*    distance : 距离
-*    humidity : 湿度
-*    correction : 修正
-*    reflection :反射温度
-*    amb : 环境温度
 * Return  :                              
 **********************************************/
 void setThermalParam2(ThermalParam2_t *thermalParam2);

@@ -845,13 +845,13 @@ void onvif_init_ImagingSettings()
 	g_onvif_cfg.ImagingSettings.BacklightCompensation.Level = 10;
 	
 	g_onvif_cfg.ImagingSettings.BrightnessFlag = 1;
-	g_onvif_cfg.ImagingSettings.Brightness = 50;
+	// g_onvif_cfg.ImagingSettings.Brightness = 50;
 	
 	g_onvif_cfg.ImagingSettings.ColorSaturationFlag = 1;
-	g_onvif_cfg.ImagingSettings.ColorSaturation = 50;
+	// g_onvif_cfg.ImagingSettings.ColorSaturation = 50;
 	
 	g_onvif_cfg.ImagingSettings.ContrastFlag = 1;
-	g_onvif_cfg.ImagingSettings.Contrast = 50;
+	// g_onvif_cfg.ImagingSettings.Contrast = 50;
 	
 	g_onvif_cfg.ImagingSettings.ExposureFlag = 1;
 	g_onvif_cfg.ImagingSettings.Exposure.Mode = ExposureMode_AUTO;
@@ -907,7 +907,7 @@ void onvif_init_ImagingSettings()
 	g_onvif_cfg.ImagingSettings.IrCutFilter = IrCutFilterMode_AUTO;
 	
 	g_onvif_cfg.ImagingSettings.SharpnessFlag = 1;
-	g_onvif_cfg.ImagingSettings.Sharpness = 50;
+	// g_onvif_cfg.ImagingSettings.Sharpness = 50;
 	
 	g_onvif_cfg.ImagingSettings.WideDynamicRangeFlag = 1;
 	g_onvif_cfg.ImagingSettings.WideDynamicRange.Mode = WideDynamicMode_OFF;
@@ -923,6 +923,17 @@ void onvif_init_ImagingSettings()
 	
 	g_onvif_cfg.ImagingSettings.WhiteBalance.CrGainFlag = 1;
 	g_onvif_cfg.ImagingSettings.WhiteBalance.CrGain = 10;
+
+
+	//  add xieqingpu
+	ImgParam_t imgParam;
+	memset(&imgParam, 0, sizeof(ImgParam_t));
+
+	getImgParam(&imgParam);
+	g_onvif_cfg.ImagingSettings.Brightness = imgParam.brightness;
+	g_onvif_cfg.ImagingSettings.Contrast = imgParam.contrast;
+	g_onvif_cfg.ImagingSettings.ColorSaturation = imgParam.saturation;
+	g_onvif_cfg.ImagingSettings.Sharpness = imgParam.sharp;
 
 	//// 扩展 add xieqingpu
 	g_onvif_cfg.ImagingSettings.ThermalSettings_extFlag = 1;
@@ -5659,7 +5670,7 @@ void onvif_init_cfg()
 #endif
 #endif
 
-	onvif_init_ImagingSettings();
+	onvif_init_ImagingSettings();   ////
 	onvif_init_ImagingOptions();
 
 	onvif_init_MetadataConfiguration();

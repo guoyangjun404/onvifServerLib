@@ -158,7 +158,7 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 	
 	// todo : add the image setting code ...
 	///   add by xieqingpu
-	 if (p_req->ImagingSettings.ThermalSettings_extFlag != 1 && p_req->ImagingSettings.DulaInformationFlag != 1){
+	if (p_req->ImagingSettings.ThermalSettings_extFlag != 1 && p_req->ImagingSettings.DulaInformationFlag != 1){
 		// printf("Brightness 亮度= %0.2f ,ColorSaturation 饱和度 = %0.2f , Contrast 对比度 = %0.2f , Sharpness 锐度= %0.2f\n",p_req->ImagingSettings.Brightness, p_req->ImagingSettings.ColorSaturation,
 		// p_req->ImagingSettings.Contrast, p_req->ImagingSettings.Sharpness); 
 		if (p_req->ImagingSettings.BrightnessFlag !=1)
@@ -173,11 +173,19 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		 if (p_req->ImagingSettings.SharpnessFlag != 1)
 			p_req->ImagingSettings.Sharpness = -1;
 		
-		setImgParam(p_req->ImagingSettings.ColorSaturation,  p_req->ImagingSettings.Contrast, p_req->ImagingSettings.Brightness, p_req->ImagingSettings.Sharpness);
-	 }
+		ImgParam_t  imgParams;
+		memset(&imgParams, 0, sizeof(ImgParam_t));
+		
+		imgParams.brightness =  p_req->ImagingSettings.Brightness;
+		imgParams.saturation =  p_req->ImagingSettings.ColorSaturation;
+		imgParams.contrast =  p_req->ImagingSettings.Contrast;
+		imgParams.sharp =  p_req->ImagingSettings.Sharpness;
+
+		setImgParam(&imgParams);
+	}
 
 	 if ( p_req->ImagingSettings.ThermalSettings.ThermalSet_ext1Flag == 1 )
-	 {
+	{
 		/* 	printf("UserPalette 色板:%d (1-12)\n", p_req->ImagingSettings.ThermalSettings.ThermalSet1.UserPalette);
 		printf("WideDynamic 宽动态:%d (0：关 or 1：开)\n", p_req->ImagingSettings.ThermalSettings.ThermalSet1.WideDynamic);
 		printf("OrgData 数据源:%d (0：原始数据 or 1：YUV数据)\n", p_req->ImagingSettings.ThermalSettings.ThermalSet1.OrgData);	
@@ -192,8 +200,8 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		thermalParam_1.actime =  p_req->ImagingSettings.ThermalSettings.ThermalSet1.Actime;
 
 		setThermalParam1(&thermalParam_1);
-	 }
-	 else if (p_req->ImagingSettings.ThermalSettings.ThermalSet_ext2Flag == 1) {
+	}
+	else if (p_req->ImagingSettings.ThermalSettings.ThermalSet_ext2Flag == 1) {
 	   	/* 
 		printf("Emissivity 发射率:%0.2f \n", p_req->ImagingSettings.ThermalSettings.ThermalSet2.Emissivity);
 		printf("Distance 距离:%0.2f \n", p_req->ImagingSettings.ThermalSettings.ThermalSet2.Distance);
@@ -212,7 +220,7 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		thermalParam_2.amb =	p_req->ImagingSettings.ThermalSettings.ThermalSet2.Amb;
 
 		setThermalParam2(&thermalParam_2);
-	 }
+	}
 			
 	if ( p_req->ImagingSettings.DulaInformationFlag == 1 )
 	{

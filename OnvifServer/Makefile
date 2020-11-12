@@ -49,6 +49,7 @@ OBJS = bm/word_analyse.o bm/util.o bm/sys_os.o bm/sys_log.o bm/sys_buf.o bm/ppst
 	  ../camCtl/pelco_ptz/ptz.o \
 	   ../camCtl/visca/libvisca.o ../camCtl/visca/libvisca_posix.o ../camCtl/visca/rw_config.o ../camCtl/visca/visca_api.o \
 	   ../camCtl/set_config.o \
+	   ../camCtl/cfg_file.o \
 	   main.o
 
 OUTPUT = onvifserver
