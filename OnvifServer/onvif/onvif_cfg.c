@@ -24,6 +24,8 @@
 #include "xml_node.h"
 #include "onvif_utils.h"
 
+#include "set_config.h"		// add by xieqingpu
+
 
 /***************************************************************************************/
 extern ONVIF_CFG g_onvif_cfg;
@@ -69,6 +71,32 @@ void onvif_parse_information_cfg(XMLN * p_node)
 		strncpy(g_onvif_cfg.DeviceInformation.HardwareId, p_HardwareId->data, sizeof(g_onvif_cfg.DeviceInformation.HardwareId));
 	}
 }
+
+////// add by xieqingpu
+void onvif_set_devinfo(CONFIG_Information * p_devInfo)
+{
+	if (p_devInfo->manufacturer[0] != '\0'){
+		strncpy(g_onvif_cfg.DeviceInformation.Manufacturer, p_devInfo->manufacturer, sizeof(g_onvif_cfg.DeviceInformation.Manufacturer)-1);
+	}
+
+	if (p_devInfo->model[0] != '\0'){
+		strncpy(g_onvif_cfg.DeviceInformation.Model, p_devInfo->model, sizeof(g_onvif_cfg.DeviceInformation.Model)-1);
+	}
+
+	if (p_devInfo->firmware_version[0] != '\0'){
+		strncpy(g_onvif_cfg.DeviceInformation.FirmwareVersion, p_devInfo->firmware_version, sizeof(g_onvif_cfg.DeviceInformation.FirmwareVersion)-1);
+	}
+
+	if (p_devInfo->serial_number[0] != '\0'){
+		strncpy(g_onvif_cfg.DeviceInformation.SerialNumber, p_devInfo->serial_number, sizeof(g_onvif_cfg.DeviceInformation.SerialNumber)-1);
+	}
+
+	if (p_devInfo->hardware_id[0] != '\0'){
+		strncpy(g_onvif_cfg.DeviceInformation.HardwareId ,p_devInfo->hardware_id, sizeof(g_onvif_cfg.DeviceInformation.HardwareId)-1);
+	}
+}
+
+/////
 
 BOOL onvif_parse_user(XMLN * p_node, onvif_User * p_user)
 {
@@ -584,6 +612,19 @@ void onvif_parse_cfg(char * xml_buff, int rlen)
 	{
 		onvif_parse_information_cfg(p_information);
 	}
+
+
+////// add by xieqingpu
+	int ret;
+	CONFIG_Information devInfo;
+	memset(&devInfo, 0, sizeof(CONFIG_Information));
+
+    ret = onvif_get_devinfo(&devInfo);
+	if ( ret == 0)
+		onvif_set_devinfo(&devInfo);
+
+/////
+
 
 	p_user = xml_node_get(p_node, "user");
 	while (p_user && strcmp(p_user->name, "user") == 0)

@@ -4,7 +4,26 @@
 #include "visca_api.h"
 #include "ptz.h" 
 
-// #include "onvif_cm.h"
+
+int onvif_get_devinfo(CONFIG_Information * p_devInfo)
+{
+	strncpy(p_devInfo->manufacturer,"Huaxiaxin",sizeof(p_devInfo->manufacturer)-1);
+	strncpy(p_devInfo->model,"IPCamera",sizeof(p_devInfo->model)-1);
+    strncpy(p_devInfo->firmware_version,"2.4",sizeof(p_devInfo->firmware_version)-1);
+	strncpy(p_devInfo->serial_number,"123456",sizeof(p_devInfo->serial_number)-1);
+	strncpy(p_devInfo->hardware_id,"1.0",sizeof(p_devInfo->hardware_id )-1);
+
+	if (p_devInfo->manufacturer[0] != '\0' &&
+		p_devInfo->model[0] != '\0' &&
+		p_devInfo->firmware_version[0] != '\0' &&
+		p_devInfo->serial_number[0] != '\0' &&
+		p_devInfo->hardware_id[0] != '\0')
+	{
+		return 0;
+	}
+}
+
+
 
 int devInit(char *ptzDevID, const char *cameraDEVID)
 {
