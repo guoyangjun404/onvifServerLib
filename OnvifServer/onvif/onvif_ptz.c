@@ -223,7 +223,7 @@ ONVIF_RET onvif_RelativeMove(RelativeMove_REQ * p_req)
     return ONVIF_OK;
 }
 
-//////
+////// add by xieqingpu
 int  onvif_find_PTZPreset_index(const char * profile_token, const char  * preset_token)
 {
     int i;
@@ -263,7 +263,7 @@ ONVIF_RET onvif_SetPreset(SetPreset_REQ * p_req)
 	
     if (p_req->PresetTokenFlag && p_req->PresetToken[0] != '\0')
     {
-        p_preset = onvif_find_PTZPreset(p_req->ProfileToken, p_req->PresetToken);
+        p_preset = onvif_find_PTZPreset(p_req->ProfileToken, p_req->PresetToken);	// &p_profile->presets[i]
         if (NULL == p_preset)
         {
         	return ONVIF_ERR_NoToken;
@@ -271,7 +271,7 @@ ONVIF_RET onvif_SetPreset(SetPreset_REQ * p_req)
     }
     else
     {
-        p_preset = onvif_get_idle_PTZPreset(p_req->ProfileToken);
+        p_preset = onvif_get_idle_PTZPreset(p_req->ProfileToken);  // &p_profile->presets[i]
         if (NULL == p_preset)
         {
         	return ONVIF_ERR_TooManyPresets;
@@ -301,14 +301,16 @@ ONVIF_RET onvif_SetPreset(SetPreset_REQ * p_req)
     }
 
     // todo : get PTZ current position ...
- ////
+ //// add by xieqingpu
  	int index = onvif_find_PTZPreset_index(p_req->ProfileToken, p_req->PresetToken);
 	// printf(" \ng_onvif_cls.preset_idx = %d\n", g_onvif_cls.preset_idx);
-	// printf(" ####   idx= %d\n", index);
 
-	short location=  index<0?0:index;
-	// pelco_set_point(location);
+	short location = index < 0 ? 0:index;
 	setPtzPreset(location);
+	//				
+/* 	if (writePtzPreset(p_profile->presets, 64) != 0) //ARRAY_SIZE(p_profile->presets) //64:由于ptz设备最多支持64个预置位
+		printf("write Ptz Preset faile.\n"); */
+		
  ////
 
     p_preset->PTZPreset.PTZPositionFlag = 1;
@@ -339,13 +341,18 @@ ONVIF_RET onvif_RemovePreset(RemovePreset_REQ * p_req)
 		return ONVIF_ERR_NoPTZProfile;
 	}
 
-    p_preset = onvif_find_PTZPreset(p_req->ProfileToken, p_req->PresetToken);
+    p_preset = onvif_find_PTZPreset(p_req->ProfileToken, p_req->PresetToken);  // &p_profile->presets[i]
     if (NULL == p_preset)
     {
 		onvif_find_PTZPreset(p_req->ProfileToken, p_req->PresetToken);
     }
 
     memset(p_preset, 0, sizeof(ONVIF_PTZPreset));
+
+	//// add by xieqingpu
+/* 	if (writePtzPreset(p_profile->presets, 64) != 0) //ARRAY_SIZE(p_profile->presets) //64:由于ptz设备最多支持64个预置位
+	printf("write Ptz Preset faile.\n"); */
+	////
 
     return ONVIF_OK;
 }
@@ -366,21 +373,21 @@ ONVIF_RET onvif_GotoPreset(GotoPreset_REQ * p_req)
 		return ONVIF_ERR_NoPTZProfile;
 	}
 
-    p_preset = onvif_find_PTZPreset(p_req->ProfileToken, p_req->PresetToken);
+    p_preset = onvif_find_PTZPreset(p_req->ProfileToken, p_req->PresetToken);  // &p_profile->presets[i]
     if (NULL == p_preset)
     {
         return ONVIF_ERR_NoToken;
     }
 
     // todo : add goto preset code ...
- ////
- 		int index = onvif_find_PTZPreset_index(p_req->ProfileToken, p_req->PresetToken);
+ //// add vy xieqingpu
+ 	int index = onvif_find_PTZPreset_index(p_req->ProfileToken, p_req->PresetToken); //获取preset的下标只是为了设置预置位
 
     // todo : get PTZ current position ...
 	/* printf(" g_onvif_cls.preset_idx = %d\n", g_onvif_cls.preset_idx);
 	printf(" ####   goto  idx= %d\n", index); */
 
-	short location=  index<0?0:index;
+	short location = index < 0 ? 0:index;
 	// pelco_get_point(location);
 	gotoPtzPreset(location);
  ////

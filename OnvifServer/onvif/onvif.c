@@ -495,6 +495,28 @@ BOOL onvif_is_user_exist(const char * username)
 	return FALSE;	
 }
 
+
+//// add by xieqingpu
+ONVIF_RET add_to_Gusers(void)
+{
+	// onvif_User p_users[10] = {0};
+	// g_onvif_cfg.users[MAX_USERS] = {0};
+	if (readUsers(g_onvif_cfg.users, ARRAY_SIZE(g_onvif_cfg.users)) != 0)	  //从文件User.dat读取用户
+	{
+		printf(" read user faile.\n");
+		return -1;
+	}else{
+
+		for(int i = 0; i <ARRAY_SIZE(g_onvif_cfg.users); i++)
+		{
+			printf("xxx  read user[%d],name:%s password:%s level:%d\n",i, g_onvif_cfg.users[i].Username, g_onvif_cfg.users[i].Password ,g_onvif_cfg.users[i].UserLevel);
+		}
+
+		return ONVIF_OK;
+	}
+}
+////
+
 ONVIF_RET onvif_add_user(onvif_User * p_user)
 {
     onvif_User * p_idle_user;
@@ -504,7 +526,7 @@ ONVIF_RET onvif_add_user(onvif_User * p_user)
 		return ONVIF_ERR_UsernameClash;
 	}
 
-	p_idle_user = onvif_get_idle_user();
+	p_idle_user = onvif_get_idle_user();	// g_onvif_cfg.users[i]
 	if (p_idle_user)
 	{
 		memcpy(p_idle_user, p_user, sizeof(onvif_User));
@@ -929,7 +951,8 @@ void onvif_init_ImagingSettings()
 	ImgParam_t imgParam;
 	memset(&imgParam, 0, sizeof(ImgParam_t));
 
-	getImgParam(&imgParam);
+	if (getImgParam(&imgParam) != 0)
+		printf("get img param.\n");
 	g_onvif_cfg.ImagingSettings.Brightness = imgParam.brightness;
 	g_onvif_cfg.ImagingSettings.Contrast = imgParam.contrast;
 	g_onvif_cfg.ImagingSettings.ColorSaturation = imgParam.saturation;
@@ -943,7 +966,8 @@ void onvif_init_ImagingSettings()
 		ThermalParam1_t thermalParam1;
 		memset(&thermalParam1, 0, sizeof(ThermalParam1_t));
 
-		getThermalParam1(&thermalParam1);
+		if (getThermalParam1(&thermalParam1) != 0)
+			printf("get thermal paeam1 faile.\n");
 		g_onvif_cfg.ImagingSettings.ThermalSettings.ThermalSet_ext1Flag = 1;
 		g_onvif_cfg.ImagingSettings.ThermalSettings.ThermalSet1.UserPalette = thermalParam1.userPalette;
 		g_onvif_cfg.ImagingSettings.ThermalSettings.ThermalSet1.WideDynamic = thermalParam1.wideDynamic;
@@ -954,7 +978,8 @@ void onvif_init_ImagingSettings()
 		ThermalParam2_t thermalParam2;
 		memset(&thermalParam2, 0, sizeof(ThermalParam2_t));
 
-		getThermalParam2(&thermalParam2);
+		if ( getThermalParam2(&thermalParam2) != 0)
+			printf("get thermal param2 faile.\n");
 		g_onvif_cfg.ImagingSettings.ThermalSettings.ThermalSet_ext2Flag = 1;
 		g_onvif_cfg.ImagingSettings.ThermalSettings.ThermalSet2.Emissivity = thermalParam2.emissivity;
 		g_onvif_cfg.ImagingSettings.ThermalSettings.ThermalSet2.Distance = thermalParam2.distance;
@@ -967,7 +992,8 @@ void onvif_init_ImagingSettings()
 		DulaInformation_t dulaInfomation;
 		memset(&dulaInfomation, 0, sizeof(DulaInformation_t));
 
-		getDulaParam(&dulaInfomation);
+		if (getDulaParam(&dulaInfomation) != 0)
+			printf("get dula faile.\n");
 		g_onvif_cfg.ImagingSettings.DulaInformationFlag = 1;
 		g_onvif_cfg.ImagingSettings.DulaInfo.focal = dulaInfomation.focal;
 		g_onvif_cfg.ImagingSettings.DulaInfo.lens = dulaInfomation.lens;

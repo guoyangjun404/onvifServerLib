@@ -7334,11 +7334,20 @@ int build_GetPresets_rly_xml(char * p_buf, int mlen, const char * argv)
 {
 	int i;
 	int offset = 0;
-    ONVIF_PROFILE * p_profile = onvif_find_profile(argv);
+    ONVIF_PROFILE * p_profile = onvif_find_profile(argv);  // g_onvif_cfg.profiles
     if (NULL == p_profile)
     {
         return ONVIF_ERR_NoProfile;
     }
+
+	//// add by xieqingpu
+/* 	if (readPtzPreset(p_profile->presets, 64) != 0)		// 64:由于云台设备最多支持64个预置位
+		printf("read PTZ preset faile.\n");
+	for(int i = 0; i < 64; i++)
+	{
+		printf("xxx Preset[%d],token:%s Name:%s\n",i, p_profile->presets[i].PTZPreset.token, p_profile->presets[i].PTZPreset.Name);
+	} */
+	////
 
 	offset += snprintf(p_buf+offset, mlen-offset, "<tptz:GetPresetsResponse>");
 
@@ -7351,10 +7360,10 @@ int build_GetPresets_rly_xml(char * p_buf, int mlen, const char * argv)
 	    
     	offset += snprintf(p_buf+offset, mlen-offset, 
     		"<tptz:Preset token=\"%s\">",
-    		p_profile->presets[i].PTZPreset.token);
+    		p_profile->presets[i].PTZPreset.token);  //token
     	offset += snprintf(p_buf+offset, mlen-offset, 
     		"<tt:Name>%s</tt:Name>", 
-    		p_profile->presets[i].PTZPreset.Name);
+    		p_profile->presets[i].PTZPreset.Name);   //name
     		
 		if (p_profile->presets[i].PTZPreset.PTZPositionFlag)
 		{

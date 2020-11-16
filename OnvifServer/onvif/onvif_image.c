@@ -181,7 +181,8 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		imgParams.contrast =  p_req->ImagingSettings.Contrast;
 		imgParams.sharp =  p_req->ImagingSettings.Sharpness;
 
-		setImgParam(&imgParams);
+		if (setImgParam(&imgParams) != 0)
+			printf("set img param faile.\n");
 	}
 
 	 if ( p_req->ImagingSettings.ThermalSettings.ThermalSet_ext1Flag == 1 )
@@ -199,7 +200,8 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		thermalParam_1.orgData =  p_req->ImagingSettings.ThermalSettings.ThermalSet1.OrgData;
 		thermalParam_1.actime =  p_req->ImagingSettings.ThermalSettings.ThermalSet1.Actime;
 
-		setThermalParam1(&thermalParam_1);
+		if (setThermalParam1(&thermalParam_1) != 0)
+			printf("set thermal param1 faile.\n");
 	}
 	else if (p_req->ImagingSettings.ThermalSettings.ThermalSet_ext2Flag == 1) {
 	   	/* 
@@ -219,7 +221,9 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		thermalParam_2.reflection =	p_req->ImagingSettings.ThermalSettings.ThermalSet2.Reflection;
 		thermalParam_2.amb =	p_req->ImagingSettings.ThermalSettings.ThermalSet2.Amb;
 
-		setThermalParam2(&thermalParam_2);
+		
+		if (setThermalParam2(&thermalParam_2) != 0)
+			printf("set thermal param2 faile.\n");
 	}
 			
 	if ( p_req->ImagingSettings.DulaInformationFlag == 1 )
@@ -238,7 +242,8 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		/* printf("focal:%d, lens:%0.2f, distance:%0.2f, dula_model:%d, x:%d, y:%d, xscale:%0.2f\n", onvifDulaInfo.focal, onvifDulaInfo.lens,
 						onvifDulaInfo.distance, onvifDulaInfo.dula_model, onvifDulaInfo.x, onvifDulaInfo.y, onvifDulaInfo.scale); */
 
-		setDulaParam(&onvifDulaInfo);
+		if (setDulaParam(&onvifDulaInfo)!= 0)
+			printf("set Dula faile.\n");
 	}
 
 

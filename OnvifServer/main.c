@@ -5,7 +5,7 @@
 #include "set_config.h"
 
 #define VISCA_COM_ID	"/dev/ttyUSB1"
-#define PTZ_COM_ID	      "/dev/ttyACM0"
+#define PTZ_COM_ID	      "/dev/ttyUSB0"
 
 
 int main(int argc, char * argv[])
@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
     onvifInit();
 
     //打开onvif log开关
-    // logOpen();
+    logOpen();
     // logClose();
 
     //onvif 开始

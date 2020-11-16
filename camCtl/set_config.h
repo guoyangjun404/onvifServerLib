@@ -16,8 +16,10 @@ typedef float                               float32_t;
 typedef unsigned short int   u16_t;
 
 #define    ONVIF_URI_LEN    300
+#define NAME_LEN    	    100
+#define TOKEN_LEN    	    100
 
-#define  g711   "G711"
+/* #define  g711   "G711"
 #define  g726   "G762"
 #define  aac      "AAC"
 
@@ -57,9 +59,9 @@ typedef struct
                                                  // If H.264 profile, either Baseline, Main, Extended or High
                                                  // if H.265 profile, either Main or Main10
                                                  // if Mpeg4 profile, either simple profile (SP) or advanced simple profile (ASP)
-} Encoding_profile;
+} Encoding_profile; */
 
-#define  VIEDO_ENCODE_JPEG   "JPEG" 
+/* #define  VIEDO_ENCODE_JPEG   "JPEG" 
 #define  VIEDO_ENCODE_MPEG4  "MPEG4"
 #define  VIEDO_ENCODE_H264   "H264"
 #define  VIEDO_ENCODE_H265   "H265"
@@ -81,18 +83,19 @@ typedef struct
     u32_t        bitrate_limit;             // The maximum output bitrate in kbps
     Video_encode       video_encoding;                 
 } Video_Encoder;
-  
+   */
 
-////
-typedef struct 
+//////
+/* typedef struct 
 {
     u8_t     server_ip[128];
     u16_t    server_port;
     u32_t    http_max_users;                 // max http connection clients
     u32_t    https_enable;                   // Indicates whether enable https connection, 0 is disable, 1 enable 
     u32_t    need_auth;                      // Indicates whether authentication is required, 0 don’t require, 1 require.
-} CONFIG_Server;                    
+} CONFIG_Server;          */           
 
+//设备信息
 typedef struct 
 {
     u8_t    manufacturer[64];                 // The manufactor of the device
@@ -102,31 +105,87 @@ typedef struct
     u8_t    hardware_id[64];                   // The hardware ID of the device
 } CONFIG_Information;
 
+//用户信息
 #define  USER_LEVEL_ADMINISTRATOR  "Administrator" 
 #define  USER_LEVEL_OPERATOR       "Operator"
 #define  USER_LEVEL_USER           "User"
 #define  USER_LEVEL_ANONYMOUS      "Anonymous"
-#define  USER_LEVEL_EXTENDED       "Extended" 
-typedef struct 
+#define  USER_LEVEL_EXTENDED       "Extended"
+typedef enum  
 {
-    u8ptr_t    user_name;
-    u8ptr_t    password;                      // optional
-    u8ptr_t    user_level;                    // USER_LEVEL_XXX          
-} CONFIG_Users;
+	_Administrator = 0, 
+	_Operator = 1,
+	_User = 2, 
+	_Anonymous = 3,
+	_Extended = 4
+} Config_UserLevel;
+typedef struct
+{	
+	u32_t  PasswordFlag	: 1;		    		    // Indicates whether the field Password is valid
+	u32_t	Reserved		: 31;
+	
+	BOOL	fixed;										// used by onvif server
 
-typedef struct 
+	char 	Username[NAME_LEN];				    // required 
+	char 	Password[NAME_LEN];				    // optional
+	
+	Config_UserLevel UserLevel;						    // required 
+} CONFIG_User;
+
+
+/* typedef struct 
 {
     Video_Source      video_source;                 // If the media profile contains a video, the video source configuration
     Video_Encoder     video_encoder;                // If the media profile contains a video, the video encoder configuration
     Audio_Source      audio_source;                 // If the media profile contains a audio, the audio source configuration
     Audio_Encoder     audio_encoder;                // If the media profile contains a audio, the audio encoder configuration
-} CONFIG_Profiles;
+} CONFIG_Profiles; */
 
-typedef struct 
+/* typedef struct 
 {
     u8_t  scope_item[128];
-} CONFIG_Scopes;   
-/////
+} CONFIG_Scopes;    */
+///////
+
+
+//预置位 , 由于读写函数需要参数一致，所以以下preset结构体与onvif的成员一样
+typedef struct
+{
+	float	x;										    // required
+} config_Vector1D;
+typedef struct
+{
+	float	x;										    // required
+	float	y;										    // required
+} config_Vector;
+typedef struct 
+{
+	u32_t	PanTiltFlag	: 1;						    // Indicates whether the field PanTilt is valid
+	u32_t	ZoomFlag	: 1;						    // Indicates whether the field Zoom is valid
+	u32_t 	Reserved	: 30;
+	
+	config_Vector 	PanTilt;						    // optional, Pan and tilt position. The x component corresponds to pan and the y component to tilt
+	config_Vector1D	Zoom;							    // optional, A zoom position
+} config_PTZVector;
+typedef struct 
+{
+	u32_t	PTZPositionFlag	: 1;					    // Indicates whether the field PTZPosition is valid
+	u32_t 	Reserved		: 31;
+	
+	char 	Name[NAME_LEN];					    // required, A list of preset position name
+	char 	token[TOKEN_LEN];					    // required
+
+	config_PTZVector	PTZPosition;					    // optional, A list of preset position
+} config_PTZPreset;
+typedef struct
+{
+    BOOL    UsedFlag;
+    config_PTZPreset  PTZPreset;
+} CONFIG_PTZPreset;
+
+
+
+
 
 
 typedef struct
@@ -212,15 +271,31 @@ void onvifStop(void);
 void onvifDeinit(void);
 
 
+
 /*********************************************
 * FuncName: onvif_get_devinfo       
 * Describe:  获取设备信息
 * Params  :                                
 * [IN]      
-*    speed : 方位 
-* Return  :                                                  
+*    p_devInfo : 设备信息
+* Return  :  成功返回0，非0失败                                                
 **********************************************/
 int onvif_get_devinfo(CONFIG_Information * p_devInfo);
+
+
+/*********************************************
+* FuncName: readUsers       
+* Describe:  从文件读出用户信息
+* Params  :                                
+* [IN]      
+*  users : 用户信息 
+*  cnt ：用户个数 
+* Return  :  成功返回0，-1失败                                                
+**********************************************/
+int readUsers(CONFIG_User *users, int cnt);
+
+//写用户信息到文件  成功返回0，-1失败 
+int writeUsers(CONFIG_User *users, int cnt);
 
 
 
@@ -245,8 +320,8 @@ int devInit(char *ptzDevID, const char *cameraDEVID);
 void controlPtzPos(float Xspeed, float Yspeed, float Zspeed);
 
 /*********************************************
-* FuncName: setPtzPreset       
-* Describe:  设置PTZ的预置位
+* FuncName: ptzStop       
+* Describe: 停止转动
 * Params  :                                
 * Return  :   0：success                                               
 **********************************************/
@@ -274,6 +349,20 @@ void gotoPtzPreset(unsigned short location);
 
 
 /*********************************************
+* FuncName: readPtzPresets       
+* Describe:  从文件读取ptz预置位
+* Params  :                                
+* [OUT]      
+*   p_preset ：
+* Return  :  成功返回0，失败返回-1                                                  
+********************************************s**/
+int readPtzPreset(CONFIG_PTZPreset * p_presets, int cnt);
+// 将ptz预置位保存到文件  成功返回0，失败返回-1
+int writePtzPreset(CONFIG_PTZPreset * p_presets, int cnt);
+
+
+
+/*********************************************
 * FuncName: focusMove       
 * Describe:  摄像头调焦
 * Params  :                                
@@ -290,18 +379,18 @@ void focusMove(float zoom);
 * Describe:  获取 摄像头参数
 * Params  :  参数数据  >0 时才有效设置，<= 0 表示没有设置                             
 * [IN]      
-* Return  :                                                  
+* Return  :  成功返回0，失败返回-1                                                
 **********************************************/
-void getImgParam(ImgParam_t *imgParams);
+int getImgParam(ImgParam_t *imgParams);
 
 /*********************************************
 * FuncName: setImgParam       
 * Describe:  设置 摄像头参数
 * Params  :  参数数据  >0 时才有效设置，<= 0 表示没有设置                             
 * [OUT]      
-* Return  :                                                  
+* Return  :  成功返回0，失败返回-1                                                
 **********************************************/
-void setImgParam(ImgParam_t *imgParams);
+int setImgParam(ImgParam_t *imgParams);
 
 
 /*********************************************
@@ -309,48 +398,48 @@ void setImgParam(ImgParam_t *imgParams);
 * Describe:  获取 热成像参数配置_1 , 获取:色板、宽动态、亮度补偿、清晰度 (锐度)
 * Params  :                                
 * [IN]      
-* Return  :                              
+* Return  : 成功返回0，失败返回-1                              
 **********************************************/
-void getThermalParam1(ThermalParam1_t *thermalParam1);
+int getThermalParam1(ThermalParam1_t *thermalParam1);
 
 /*********************************************
 * FuncName: setThermalParam1       
 * Describe:  热成像参数配置设置_1 , 设置:色板、宽动态、亮度补偿、清晰度 (锐度)
 * Params  :                                
 * [OUT]      
-* Return  :                              
+* Return  : 成功返回0，失败返回-1                             
 **********************************************/
-void setThermalParam1(ThermalParam1_t *thermalParam1);
+int setThermalParam1(ThermalParam1_t *thermalParam1);
 
 /*********************************************
 * FuncName: getThermalParam2       
 * Describe:  获取 热成像参数配置设置_1 , 获取:发射率、距离、湿度、修正、反射温度、环境温度
 * Params  :                                
 * [IN]      
-* Return  :                              
+* Return  : 成功返回0，失败返回-1                             
 **********************************************/
-void getThermalParam2(ThermalParam2_t *thermalParam2);
+int getThermalParam2(ThermalParam2_t *thermalParam2);
 
 /*********************************************
 * FuncName: setThermalParam2       
 * Describe:  热成像参数配置设置_1 , 设置:发射率、距离、湿度、修正、反射温度、环境温度
 * Params  :                                
 * [OUT]      
-* Return  :                              
+* Return  : 成功返回0，失败返回-1                             
 **********************************************/
-void setThermalParam2(ThermalParam2_t *thermalParam2);
+int setThermalParam2(ThermalParam2_t *thermalParam2);
 
 
 
 /*********************************************
-* FuncName: setDulaParam        
+* FuncName: getDulaParam        
 * Describe:  获取dula参数数据
 * Params  :                                
 * [IN]      
 *   dulaInfo :  获取dulaInfo数据参数
-* Return  :                                                  
+* Return  : 成功返回0，失败返回-1                                                 
 **********************************************/
-void getDulaParam(DulaInformation_t *dulaInfo);
+int getDulaParam(DulaInformation_t *dulaInfo);
 
 /*********************************************
 * FuncName: setDulaParam        
@@ -358,9 +447,9 @@ void getDulaParam(DulaInformation_t *dulaInfo);
 * Params  :                                
 * [OUT]      
 *   dulaInfo :  设置dulaInfo数据
-* Return  :                                                  
+* Return  : 成功返回0，失败返回-1                                           int      
 **********************************************/
-void setDulaParam(DulaInformation_t *dulaInfo);
+int setDulaParam(DulaInformation_t *dulaInfo);
 
 
 

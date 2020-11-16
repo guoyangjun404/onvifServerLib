@@ -621,11 +621,10 @@ void onvif_parse_cfg(char * xml_buff, int rlen)
     ret = onvif_get_devinfo(&devInfo);
 	if ( ret == 0)
 		onvif_set_devinfo(&devInfo);
-
 /////
 
 
-	p_user = xml_node_get(p_node, "user");
+/* 	p_user = xml_node_get(p_node, "user");
 	while (p_user && strcmp(p_user->name, "user") == 0)
 	{
 		onvif_User user;
@@ -634,11 +633,27 @@ void onvif_parse_cfg(char * xml_buff, int rlen)
     	if (onvif_parse_user(p_user, &user))
     	{
     		// user.fixed = TRUE;
-    		onvif_add_user(&user);
+    		onvif_add_user(&user);	//g_onvif_cfg.users
     	}
 
     	p_user = p_user->next;
-	}	
+	}
+ */
+	//// add by xieqingpu
+	/* if (writeUsers(g_onvif_cfg.users, ARRAY_SIZE(g_onvif_cfg.users)) != 0)   //写用户到文件保存起来
+		printf(" write user faile.\n"); */
+
+	/* onvif_User p_users[10] = {0};
+	if (readUsers(p_users, ARRAY_SIZE(g_onvif_cfg.users)) != 0)	// 读出用户打印看看是否正确//
+		printf(" read user faile.\n");
+	for(int i = 0; i <ARRAY_SIZE(g_onvif_cfg.users); i++)
+	{
+		printf("xxx user[%d],name:%s password:%s level:%d\n",i, p_users[i].Username, p_users[i].Password ,p_users[i].UserLevel);
+	} */
+
+	add_to_Gusers();    	 	 // 用户 。从文件读取用户复制给全区变量g_onvif_cfg.users，给soap_GetUsers显示在前端
+	////
+
 	
 	p_profile = xml_node_get(p_node, "profile");
 	while (p_profile && strcmp(p_profile->name, "profile") == 0)

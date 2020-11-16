@@ -199,9 +199,9 @@ typedef struct _ONVIF_NotificationMessage
 	onvif_NotificationMessage	NotificationMessage;
 } ONVIF_NotificationMessage;
 
-typedef struct _ONVIF_PROFILE
+typedef struct ONVIF_PROFILE     // ONVIF_PROFILE 
 { 
-	struct _ONVIF_PROFILE * next;
+	struct ONVIF_PROFILE * next;
 	
     ONVIF_VideoSourceConfiguration      * v_src_cfg;    // video source configuration
     ONVIF_VideoEncoder2Configuration	* v_enc_cfg;    // video encoder configuration
@@ -492,6 +492,8 @@ onvif_Scope *                               onvif_get_idle_scope();
 /***************************************************************************************/
 BOOL                                        onvif_is_user_exist(const char * username);
 ONVIF_RET                                   onvif_add_user(onvif_User * p_user);
+ONVIF_RET                                   add_to_Gusers(void);			// add by xieqingpu
+
 onvif_User *                                onvif_find_user(const char * username);
 onvif_User *                                onvif_get_idle_user();
 const char *                                onvif_get_user_pass(const char * username);

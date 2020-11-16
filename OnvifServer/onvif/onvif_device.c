@@ -26,6 +26,8 @@
 #include "onvif_probe.h"
 #include "onvif_event.h"
 
+#include "set_config.h"
+
 /***************************************************************************************/
 extern ONVIF_CFG g_onvif_cfg;
 extern ONVIF_CLS g_onvif_cls;
@@ -442,7 +444,7 @@ ONVIF_RET onvif_CreateUsers(CreateUsers_REQ * p_req)
 		}
 
 		len = strlen(p_req->User[i].Username);
-		if (len <= 3)
+		if (len <= 1)
 		{
 			return ONVIF_ERR_UsernameTooShort;
 		}
@@ -452,7 +454,7 @@ ONVIF_RET onvif_CreateUsers(CreateUsers_REQ * p_req)
 			return ONVIF_ERR_UsernameClash;
 		}
 		
-		p_idle_user = onvif_get_idle_user();
+		p_idle_user = onvif_get_idle_user();	//g_onvif_cfg.users[i]
 		if (p_idle_user)
 		{
 			memcpy(p_idle_user, &p_req->User[i], sizeof(onvif_User));
@@ -470,7 +472,10 @@ ONVIF_RET onvif_CreateUsers(CreateUsers_REQ * p_req)
 			return ONVIF_ERR_TooManyUsers;
 		}
 	}
-	
+	//// add by xieqingpu 
+	if (writeUsers(g_onvif_cfg.users, ARRAY_SIZE(g_onvif_cfg.users)) != 0)   //写用户到文件保存起来
+		printf(" write user faile.\n");	
+
 	return ONVIF_OK;
 }
 
@@ -510,6 +515,10 @@ ONVIF_RET onvif_DeleteUsers(DeleteUsers_REQ * p_req)
 			memset(p_item, 0, sizeof(onvif_User));
 		}
 	}
+
+	//删除后更新用户文件
+	if (writeUsers(g_onvif_cfg.users, ARRAY_SIZE(g_onvif_cfg.users)) != 0)   //写用户到文件保存起来
+	printf(" write user faile.\n");	
 
 	return ONVIF_OK;
 }
