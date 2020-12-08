@@ -1,41 +1,67 @@
 
 #include <stdio.h>
 #include <unistd.h>
-
+#include <errno.h>
+#include <signal.h>
+#include <stdbool.h>
 #include "set_config.h"
+#include "ntp_conf.h"
+#include "utils_log.h"
 
-#define VISCA_COM_ID	"/dev/ttyUSB1"
-#define PTZ_COM_ID	      "/dev/ttyUSB0"
+#define PTZ_COM     "/dev/ttyAMA2"
+#define VISCA_COM "/dev/ttyAMA3"
 
+void signal_handler(int sig)
+{
+    if (SIGSEGV == sig){
+        printf("SIGSEGV   \n"); 
+        exit(0);
+    }
+}
+
+void init_signal()
+{
+	//signal (SIGPIPE, pipe_handler);
+    signal (SIGTERM, signal_handler);
+    signal (SIGQUIT, signal_handler);
+    signal (SIGINT,  signal_handler);
+    signal (SIGTSTP, signal_handler);
+    signal (SIGUSR1, signal_handler);
+    //signal (SIGSEGV, signal_handler);
+}
 
 int main(int argc, char * argv[])
 {
+	init_signal();
 
-    //设备初始化
-    int ret = devInit(PTZ_COM_ID, VISCA_COM_ID);
-    if (ret == 0)   printf("++++ dev init successful. +++++\r\n");
+	/* 打开onvif log开关 */
+    // logOpen();
+    logClose();
 
-    //onvi初始化
+    /* 设备初始化 */
+    devInit(PTZ_COM, VISCA_COM);
+
+    /* onvi初始化 */
     onvifInit();
 
-    //打开onvif log开关
-    logOpen();
-    // logClose();
+	/* 开启ntp线程 */
+	ntp_update_run();
 
-    //onvif 开始
+
+    /* onvif 开始 */
     onvifStart(); 
 
-    for (;;)
+    while(1)
     {
         if (getchar() == 'q')
         {
-            // onvif 停止
-            onvifStop();
             break;
         }
-
-        sleep(5);
+        usleep(5*1000*1000LL);
     } 
+	
+	// onvif 停止
+	onvifStop();
 
     // onvif 反初始化
     onvifDeinit();

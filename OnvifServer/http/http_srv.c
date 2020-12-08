@@ -138,6 +138,7 @@ int http_redirect_rly(HTTPCLN * p_user, HTTPMSG * rx_msg)
 void http_msg_handler(HTTPCLN * p_user, HTTPMSG * rx_msg)
 {
     char * post = rx_msg->first_line.value_string;
+	// printf("xxx  http_msg_handler | rx_msg->msg_buf =\n %s\n", rx_msg->msg_buf);
 
     if (strstr(post, "FirmwareUpgrade"))	// must be the same with onvif_StartFirmwareUpgrade ( in soap_StartFirmwareUpgrade() )
 	{
@@ -448,6 +449,7 @@ int http_tcp_listen_rx(HTTPSRV * p_srv)
 		log_print(LOG_ERR, "%s, accept, cfd(%d), %s\r\n", __FUNCTION__, cfd, sys_os_get_socket_error());
 		return -1;
 	}
+	// printf("xxx +++++++++ caddr = %s:%d / %d ++++++++\n", inet_ntoa(caddr.sin_addr), ntohs(caddr.sin_port), caddr.sin_port );  /////
 
 #ifdef HTTPS
     if (p_srv->https)
@@ -645,7 +647,7 @@ int http_srv_net_init(HTTPSRV * p_srv)
 	reuse_ret = setsockopt(p_srv->sfd, SOL_SOCKET, SO_REUSEADDR, (char *)&val, 4);
 
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = p_srv->saddr;
+	addr.sin_addr.s_addr = inet_addr("0.0.0.0")/* p_srv->saddr */;
 	addr.sin_port = htons(p_srv->sport);
 	
 	if (bind(p_srv->sfd, (struct sockaddr *)&addr, sizeof(addr)) == -1)

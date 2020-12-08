@@ -444,10 +444,12 @@ const char * get_dns_server()
 	memset(dns, 0, sizeof(dns));
 
 	// todo : parese /etc/resolv.conf file to get dns server
-
-	// just return 192.168.1.1
-	strcpy(dns, "192.168.1.1");
-	
+	if (NULL != get_default_gateway()) {
+		strcpy(dns, get_default_gateway());
+	}
+	else {
+		return NULL;
+	}
 #endif
 
 	return dns;

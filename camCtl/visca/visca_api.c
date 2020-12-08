@@ -7,6 +7,8 @@
 #include "rw_config.h"
 
 
+#include "../utils_log.h"
+
 VISCAInterface_t iface;
 VISCACamera_t camera;
 
@@ -66,17 +68,7 @@ VISCA_set_flip(VISCAInterface_t *iface, VISCACamera_t *camera, int flip)
 }
 
 
-//void* visca_thread(void* param);
 
-
-static pthread_t gs_pid;
-/*
-int start_visca_thread()
-{
-    return pthread_create(&gs_pid, 0, visca_thread, NULL);
-}
-
-*/
 /*
 VISCA_API uint32_t
 VISCA_set_zoom_value(VISCAInterface_t *iface, VISCACamera_t *camera, uint32_t zoom)
@@ -183,17 +175,19 @@ void set_Contract(int param){
 
 int set_ColorHue(int param){
 
-	printf("VISCA_clear ok\n");
+	// UTIL_INFO("set_ColorHue %d\n", param);
 	return	VISCA_set_md_adjust_huelevel(&iface, &camera, param);
 	printf("VISCA_clear ok\n");
 }
 //色饱和度 0-100
 int set_colorsatuation_value(int param){
+	// UTIL_INFO("set_colorsatuation_value %d\n", param);
 
 	return	VISCA_colorsatuation_value(&iface, &camera, param);
 }
 //对比度0-100
 int set_contract_value(int param){//00-100
+	// UTIL_INFO("set_contract_value %d\n", param);
 
 	return	VISCA_contract_value(&iface, &camera, param);
 }
@@ -270,12 +264,38 @@ int set_zoom_value(int param){
 	printf("command =%x\n",command);
 	return VISCA_set_zoom_value(&iface, &camera, command);
 }
+
+
+int set_zoom(unsigned short val)
+{
+
+	return VISCA_set_zoom_value(&iface, &camera, val);
+}
+
+
+int get_zoom_val()
+{
+	unsigned short zoom_value=0;
+	int ret = VISCA_get_zoom_value(&iface, &camera, &zoom_value);
+	
+	if(ret==VISCA_SUCCESS)
+		return zoom_value;
+	else
+	{
+		printf("get zoom error:%d\n",ret);
+		return -1;
+	}
+}
+
+
 //亮度补偿
 int set_exp_comp_value(int param){
 	return VISCA_set_ExpComp_value(&iface, &camera, param);
 }
 //清晰度 (锐度)0-15
 int set_aperture_value(int param){
+	// UTIL_INFO("set_aperture_value %d\n", param);
+
 	return VISCA_set_Aperture_value(&iface, &camera, param);
 }
 
@@ -334,6 +354,10 @@ int set_zoom_tele()
  	return VISCA_set_zoom_tele(&iface, &camera);
 }
 
+int set_zoom_tele_speed(speed)		////
+{
+ 	return VISCA_set_zoom_tele_speed(&iface, &camera, speed);
+}
 
 int set_zoom_wide()
 {
@@ -341,337 +365,98 @@ int set_zoom_wide()
 
 }
 
+
+int set_zoom_wide_speed(speed)		////
+{
+	return VISCA_set_zoom_wide_speed(&iface, &camera, speed);
+
+}
+
+
 int set_zoom_stop()
 {
 	return VISCA_set_zoom_stop(&iface, &camera);
 }
 
 
+static char* com_dev;
+static pthread_t gs_pid;
 
-visca_init(const char* device)
+
+
+
+void* visca_init_thread(void* param)
 {
-	//打开串口
-	if (VISCA_open_serial(&iface, VISCA_COM_ID)!=VISCA_SUCCESS)
+	int ret;
+	while(1)
 	{
-		printf("unable to open serial device %s\n", VISCA_COM_ID);
-		exit(1);
+		//打开串口
+		if (VISCA_open_serial(&iface, com_dev)!=VISCA_SUCCESS)
+		{
+			UTIL_ERR("unable to open serial device %s\n", com_dev);
+			sleep(3);
+			continue;
+		}
+		else
+			break;
+	}
+	
+	// sleep(5);
+	UTIL_INFO("sleep 30 second visca \n");
+
+	while(1)
+	{
+		int camera_num;
+		iface.broadcast=0;
+	
+		if(VISCA_set_address(&iface, &camera_num)!=VISCA_SUCCESS)
+		{
+			UTIL_ERR("visca VISCA_set_address fail\n");
+			sleep(3);
+			continue;
+		}
+		else
+			break;
 	}
 
-	int camera_num;
 
-	iface.broadcast=0;
-	VISCA_set_address(&iface, &camera_num);
-
-	camera.address=1;
-
-	//获取信息
-	VISCA_get_camera_info(&iface, &camera);
-	printf("Some camera info:\n------------------\n");
-	printf("vendor: 0x%04x\n model: 0x%04x\n ROM version: 0x%04x\n socket number: 0x%02x\n",
+	while(1)
+	{
+		camera.address=1;
+		
+		//获取信息
+		ret = VISCA_get_camera_info(&iface, &camera);
+		if(ret==VISCA_SUCCESS)
+		{
+			UTIL_INFO("camera info vendor: 0x%04x\n model: 0x%04x\n ROM version: 0x%04x\n socket number: 0x%02x\n",
 					camera.vendor, camera.model, camera.rom_version, camera.socket_num);
+
+			return VISCA_SUCCESS;
+		}
+		else
+			UTIL_ERR("VISCA_get_camera_info fail\n");
+
+		sleep(3);
+	}
+
 }
 
 
 
-//VISCA_set_focus_far(VISCAInterface_t *iface, VISCACamera_t *camera)
-//VISCA_set_focus_near(VISCAInterface_t *iface, VISCACamera_t *camera)
-int main_test()
+int visca_init(const char* device)
 {
+	com_dev = device;
 
-	//VISCAInterface_t iface;
-	//VISCACamera_t camera;
-
-
-	int camera_num;
-	uint8_t value;
-	uint16_t zoom;
-
-
-	uint16_t zoom_value=0;
-
-
-	//打开串口
-	if (VISCA_open_serial(&iface, VISCA_COM_ID)!=VISCA_SUCCESS)
-	{
-		printf("unable to open serial device\n");
-		exit(1);
-	}
-
-
-
-	printf("VISCA_set_address....\n");
-
-
-	iface.broadcast=0;
-	VISCA_set_address(&iface, &camera_num);
-
-
-
-
-	camera.address=1;
-	//VISCA_clear(&iface, &camera);
-   //printf("VISCA_clear ok\n");
-
-
-
-	//获取信息
-	VISCA_get_camera_info(&iface, &camera);
-	printf("Some camera info:\n------------------\n");
-	printf("vendor: 0x%04x\n model: 0x%04x\n ROM version: 0x%04x\n socket number: 0x%02x\n",
-		camera.vendor, camera.model, camera.rom_version, camera.socket_num);
-
-	VISCA_usleep(500000);
-
-	//set_auto_icr(&iface, &camera,  0);
-	//VISCA_usleep(1000000);
-
-
-	//初始化数据  read config.ini
-	
-	int colorsatuation_value = GetIniKeyInt("COLORSATUATION", "value", "config.ini");
-	int contract_value = GetIniKeyInt("CONTRACT", "value", "config.ini");
-	int zoom_parm = GetIniKeyInt("ZOOM", "value", "config.ini");
-	int exp_comp_value = 50;
-	int aperture_value = 0;
-	int iris_value = 5;
-	uint16_t get_value = 2;
-	uint16_t *p = &get_value;
-	int focus_value = 0x6000;
-	//set_focus_near_limit(focus_value);
-	//设置光圈手动模式
-	//VISCA_set_spot_ae_off(&iface, &camera);
-	//设置手动聚焦
-	VISCA_set_focus_Manual(&iface, &camera);
-	int speed = 0;
-	while(1)
-	{
-		
-		uint16_t value;
-		int ret=0;
-/*		
-		VISCA_set_focus_near_speed(&iface, &camera, speed);
-		VISCA_usleep(3000000);
-		speed++;
-		if(speed > 7)
-			speed = 0;
-*/
-		
-/*		
-		int colorHue_value = 50;
-		printf("colorHue_value=%x\n",colorHue_value);
-		ret = set_ColorHue(colorHue_value);
-		
-		if(ret!=VISCA_SUCCESS)
-			printf("set_ColorHue error:%d\n",ret);
-		else 
-			printf("colorHue_value=%x\n",colorHue_value);
-			
-		VISCA_usleep(3000000);
-*/		
-#if 0		
-		ret = set_colorsatuation_value(colorsatuation_value);
-		if(ret!=VISCA_SUCCESS)
-			printf("set_colorsatuation error:%d\n",ret);
-		else
-			printf("colorsatuation_value=%x\n",colorsatuation_value);
-			
-		VISCA_usleep(3000000);
-		colorsatuation_value+=10;
-		if(colorsatuation_value > 100) 
-			colorsatuation_value = 0;
-		
-		
-		ret = set_contract_value(contract_value);
-		if(ret!=VISCA_SUCCESS)
-			printf("set_contract_value error:%d\n",ret);
-		else
-			printf("contract_value=%x\n",contract_value);
-		PutIniKeyInt("CONTRACT", "value", contract_value, "config.ini");	
-		VISCA_usleep(3000000);
-		contract_value+=10;
-		if(contract_value > 100) 
-			contract_value = 0;
-		
-			
-	
-		ret = set_zoom_value(zoom_parm);
-		if(ret!=VISCA_SUCCESS)
-			printf("set_colorsatuation error:%d\n",ret);
-		else
-			printf("zoom_parm =%x\n",zoom_parm);
-			
-		VISCA_usleep(3000000);
-		zoom_parm++;
-		if(zoom_parm > 19) 
-			zoom_parm = 0;
-	
-
-		ret = set_exp_comp_value(exp_comp_value);
-		if(ret!=VISCA_SUCCESS)
-			printf("set_exp_comp_value error:%d\n",ret);
-		else
-			printf("exp_comp_value=%x\n",exp_comp_value);
-			
-		VISCA_usleep(3000000);
-		exp_comp_value+=10;
-		if(exp_comp_value > 100) 
-			exp_comp_value = 0;
-#endif	
-/*	
-		ret = set_aperture_value(aperture_value);
-		if(ret!=VISCA_SUCCESS)
-			printf("set_aperture_value error:%d\n",ret);
-		else
-			printf("aperture_value=%x\n",aperture_value);
-			
-		VISCA_usleep(3000000);
-		
-		if(aperture_value == 0) 
-			aperture_value = 15;
-		else
-			aperture_value = 0;	
-*/
-/*		
-		ret = set_iris_reset();
-		if(ret!=VISCA_SUCCESS)
-			printf("set_iris_reset error:%d\n",ret);
-		else
-			printf("set_iris_reset\n");
-		VISCA_usleep(3000000);
-*/		
-/*
-		ret = set_iris_value(iris_value);
-		if(ret!=VISCA_SUCCESS)
-			printf("set_aperture_value error:%d\n",ret);
-		else
-			printf("set_iris_value=%x\n",iris_value);
-			
-		VISCA_usleep(3000000);
-		iris_value++;
-		if(iris_value > 17) 
-			iris_value = 5;
-			
-
-		ret = VISCA_get_iris_value(&iface, &camera, &p);
-		if(ret!=VISCA_SUCCESS)
-			printf("get_iris_value error");
-		else
-			printf("get_iris_value :%d\n",(*p));
-			*/
-		
-		for(int i =0;i < 10; i++){
-			ret = VISCA_set_focus_far(&iface, &camera);
-			if(ret!=VISCA_SUCCESS)
-				printf("set_focus_far error");
-			else
-				printf("set_focus_far\n");
-			VISCA_usleep(3000000);
-		}
-
-		for(int i =0;i < 10; i++){
-			ret = VISCA_set_focus_near(&iface, &camera);
-			if(ret!=VISCA_SUCCESS)
-				printf("set_focus_near error");
-			else
-				printf("set_focus_near\n");
-			VISCA_usleep(3000000);
-		}
-
-/*
-		//聚焦
-		ret = set_focus_near_limit(focus_value);
-		if(ret!=VISCA_SUCCESS)
-			printf("set_focus_near_limit error:%d\n",ret);
-		else
-			printf("set_focus_near_limit=%x\n",focus_value);
-			
-		VISCA_usleep(3000000);
-		focus_value = focus_value + 0x1000;
-		if(focus_value > 0x7000)
-			focus_value = 0x1000;
-*/
-/*
-		ret = set_iris_up();
-		if(ret!=VISCA_SUCCESS)
-			printf("set_iris_up error");
-		else
-			printf("set_iris_up OK");
-*/			
-
-
-//		VISCA_usleep(3000000);
-/*
-		ret = VISCA_set_flip(&iface, &camera, 0);
-		if(ret!=VISCA_SUCCESS)
-			printf("set flip error:%d\n",ret);
-
-			VISCA_usleep(3000000);
-
-			
-		ret = VISCA_set_flip(&iface, &camera, 1);
-		if(ret!=VISCA_SUCCESS)
-			printf("set flip error:%d\n",ret);
-
-		VISCA_usleep(3000000);
-
-
-
-
-		zoom_value=0;
-		ret = VISCA_get_zoom_value(&iface, &camera, &zoom_value);
-
-		if(ret==VISCA_SUCCESS)
-			printf("zoom_value=%x\n",zoom_value);
-		else
-			printf("get zoom error:%d\n",ret);
-		VISCA_usleep(3000000);
-
-
-
-		if (VISCA_set_zoom_value(&iface, &camera, 0x3c68)!=VISCA_SUCCESS)
-		  printf("error setting zoom\n");
-		
-		VISCA_usleep(3000000);
-
-		zoom_value=0;
-		VISCA_get_zoom_value(&iface, &camera, &zoom_value);
-		if(ret==VISCA_SUCCESS)
-			printf("zoom_value=%x\n",zoom_value);
-		else
-			printf("get zoom error:%d\n",ret);
-
-		VISCA_usleep(3000000);
-
-		
-		if (VISCA_set_zoom_value(&iface, &camera, 0x1613)!=VISCA_SUCCESS)
-		  printf("error setting zoom\n");
-		VISCA_usleep(3000000);
-
-
-
-		zoom_value=0;
-		VISCA_get_zoom_value(&iface, &camera, &zoom_value);
-		if(ret==VISCA_SUCCESS)
-			printf("zoom_value=%x\n",zoom_value);
-		else
-			printf("get zoom error:%d\n",ret);
-
-		VISCA_usleep(3000000);
-*/
-		
-	}
-
+	pthread_create(&gs_pid, 0, visca_init_thread, NULL);
 	return 0;
 }
 
 
 
-
-
-
-
-
-
+int visca_deinit()
+{
+	return VISCA_close_serial(&iface);
+}
 
 
 

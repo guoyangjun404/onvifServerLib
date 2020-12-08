@@ -29,7 +29,6 @@
 #define LOG_ERR     4
 #define LOG_FATAL   5
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

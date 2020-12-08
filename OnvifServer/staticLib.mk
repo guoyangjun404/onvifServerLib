@@ -1,7 +1,7 @@
 ################OPTION###################
 
-# PREFIX = arm-himix200-linux-
-PREFIX = 
+PREFIX = arm-himix200-linux-
+#PREFIX = 
 
 CCOMPILE = $(PREFIX)gcc
 CPPCOMPILE =  $(PREFIX)g++
@@ -31,8 +31,8 @@ INCLUDEDIR = -I./bm -I./onvif -I./http
 INCLUDEDIR += -I./openssl/include -I./openssl/include/linux
 INCLUDEDIR += -I./libical/include
 INCLUDEDIR += -I../camCtl
-# INCLUDEDIR += -I../camCtl/pelco_ptz 
-# INCLUDEDIR += -I../camCtl/visca
+INCLUDEDIR += -I../camCtl/pelco_ptz 
+INCLUDEDIR += -I../camCtl/visca
 
 LINK = $(PREFIX)g++
 LINKOPTION = -g -o onvifserver
@@ -45,10 +45,11 @@ OBJS = bm/word_analyse.o bm/util.o bm/sys_os.o bm/sys_log.o bm/sys_buf.o bm/ppst
        onvif/onvif_media.o onvif/onvif_image.o onvif/onvif_cm.o onvif/onvif_recording.o onvif/onvif_analytics.o \
        onvif/onvif_cfg.o onvif/onvif_deviceio.o onvif/onvif_media2.o onvif/onvif_thermal.o \
        onvif/onvif_credential.o onvif/onvif_accessrules.o onvif/onvif_schedule.o onvif/onvif_receiver.o \
-	   onvif_main.o	
-	#   ../camCtl/pelco_ptz/ptz.o \
-	#    ../camCtl/visca/libvisca.o ../camCtl/visca/libvisca_posix.o ../camCtl/visca/rw_config.o ../camCtl/visca/visca_api.o
-	#    ../camCtl/set_config.o 
+	   onvif_main.o	\
+	  ../camCtl/pelco_ptz/ptz.o ../camCtl/ntp_conf.o \
+	   ../camCtl/visca/libvisca.o ../camCtl/visca/libvisca_posix.o ../camCtl/visca/rw_config.o ../camCtl/visca/visca_api.o \
+	   ../camCtl/set_config.o \
+	   ../camCtl/cfg_file.o 
 	#    main.o
 
 STATIC_LIB =  libonvifserver.a

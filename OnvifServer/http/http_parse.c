@@ -21,6 +21,8 @@
 #include "http_parse.h"
 #include "sys_buf.h"
 
+#include <string.h>  /////
+
 /***************************************************************************************/
 
 typedef struct request_message_type_value
@@ -39,14 +41,17 @@ static const REQMTV req_mtvs[] =
 	{HTTP_MT_NOTIFY,		"NOTIFY",		6},
 	{HTTP_MT_POST,			"POST",			4},
 	{HTTP_MT_SUBSCRIBE,		"SUBSCRIBE",	9},
-	{HTTP_MT_UNSUBSCRIBE,	"UNSUBSCRIBE",	11}
+	{HTTP_MT_UNSUBSCRIBE,	"UNSUBSCRIBE",	11},
+	{HTTP_MT_OPTIONS,	"OPTIONS",	7}
 };
 
 /***************************************************************************************/
 
+
 BOOL http_is_http_msg(char * msg_buf)
 {
 	uint32 i;
+	// printf("xxx http_is_http_msg | msg_buf =%s\n",msg_buf);
 	
 	for (i=0; i<sizeof(req_mtvs)/sizeof(REQMTV); i++)
 	{

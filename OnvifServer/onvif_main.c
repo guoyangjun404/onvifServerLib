@@ -36,6 +36,7 @@ void init_network()
 
 void onvifInit(void)
 {
+#if 0 //heguohuo
 #if __LINUX_OS__
 
 #ifndef DEBUG
@@ -49,16 +50,17 @@ void onvifInit(void)
     setrlimit(RLIMIT_CORE, &limit);
     
 #endif
+#endif
     sys_buf_init(32);
     http_msg_buf_init(16);
 
-	onvif_init();    ////
 }
 
 
 void onvifStart(void)
 {
     init_network();
+    onvif_init();    ////
 
 	onvif_start(); 
 }

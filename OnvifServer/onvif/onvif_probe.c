@@ -24,6 +24,8 @@
 #include "onvif_device.h"
 #include "onvif.h"
 #include "onvif_utils.h"
+#include "set_config.h"
+#include "utils_log.h"
 
 /***************************************************************************************/
 extern ONVIF_CFG g_onvif_cfg;
@@ -111,8 +113,12 @@ SOCKET onvif_probe_init()
 
 	if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mcast, sizeof(mcast)) < 0)
 	{
-		printf("setsockopt IP_ADD_MEMBERSHIP error!%s\n", sys_os_get_socket_error());
-		return 0;
+		system_ex("echo 20 > /proc/sys/net/ipv4/igmp_max_memberships");
+		if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mcast, sizeof(mcast)) < 0)
+		{
+			UTIL_ERR("setsockopt IP_ADD_MEMBERSHIP error!%s\n", sys_os_get_socket_error());
+			return 0;
+		}
 	}
 
 	return fd;

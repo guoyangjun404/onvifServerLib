@@ -28,7 +28,7 @@
 #include <math.h>
 
 #include "set_config.h"		//add by xieqingpu
-
+#include "utils_log.h"
 #ifdef LIBICAL
 #include "icalvcal.h"
 #include "vcc.h"   
@@ -499,23 +499,22 @@ BOOL onvif_is_user_exist(const char * username)
 //// add by xieqingpu
 ONVIF_RET add_to_Gusers(void)
 {
-	// onvif_User p_users[10] = {0};
 	// g_onvif_cfg.users[MAX_USERS] = {0};
 	if (readUsers(g_onvif_cfg.users, ARRAY_SIZE(g_onvif_cfg.users)) != 0)	  //从文件User.dat读取用户
 	{
 		printf(" read user faile.\n");
 		return -1;
 	}else{
-
-		for(int i = 0; i <ARRAY_SIZE(g_onvif_cfg.users); i++)
+		/* for(int i = 0; i <ARRAY_SIZE(g_onvif_cfg.users); i++)
 		{
 			printf("xxx  read user[%d],name:%s password:%s level:%d\n",i, g_onvif_cfg.users[i].Username, g_onvif_cfg.users[i].Password ,g_onvif_cfg.users[i].UserLevel);
-		}
-
+		} */
 		return ONVIF_OK;
 	}
 }
+
 ////
+
 
 ONVIF_RET onvif_add_user(onvif_User * p_user)
 {
@@ -1635,15 +1634,17 @@ void onvif_init_VideoSourceConfigurationOptions()
 
 void onvif_init_SystemDateTime()
 {
-	g_onvif_cfg.SystemDateTime.DateTimeType = SetDateTimeType_NTP;
-    g_onvif_cfg.SystemDateTime.DaylightSavings = FALSE;
+    int ret = -1;
+    ret = GetSystemDateTime(&g_onvif_cfg.SystemDateTime);
+	if (ret < 0) {
+		g_onvif_cfg.SystemDateTime.DateTimeType = SetDateTimeType_Manual;
+	    g_onvif_cfg.SystemDateTime.DaylightSavings = FALSE;
+	    g_onvif_cfg.SystemDateTime.TimeZoneFlag = 1;
+		strcpy(g_onvif_cfg.SystemDateTime.TimeZone.TZ, "CST-8:00:00");
+	}
 
-    g_onvif_cfg.SystemDateTime.TimeZoneFlag = 1;
-    
-	onvif_get_timezone(g_onvif_cfg.SystemDateTime.TimeZone.TZ, sizeof(g_onvif_cfg.SystemDateTime.TimeZone.TZ));	
+	UTIL_INFO("TZ=%s", g_onvif_cfg.SystemDateTime.TimeZone.TZ);
 }
-
-
 
 void onvif_init_MetadataConfiguration()
 {
@@ -1759,7 +1760,7 @@ ONVIF_NetworkInterface * onvif_add_NetworkInterface()
 	return p_net_inf;
 }
 
-void onvif_init_NetworkInterface()
+void onvif_init_NetworkInterface(onvif_NetworkInterface	*pNetworkInterface)
 {
 #if __WINDOWS_OS__
 
@@ -1882,13 +1883,19 @@ NEXT:
 			if (NULL == p_net_inf)
 			{
 				break;
-			}	
-
+			}
+			
 			p_net_inf->NetworkInterface.Enabled = TRUE;
 			p_net_inf->NetworkInterface.InfoFlag = 1;			
 			p_net_inf->NetworkInterface.Info.NameFlag = 1;
 			p_net_inf->NetworkInterface.IPv4Flag = 1;
 			p_net_inf->NetworkInterface.IPv4.Enabled = TRUE;
+            if (pNetworkInterface) {
+				p_net_inf->NetworkInterface.IPv4.Config.DHCP = pNetworkInterface->IPv4.Config.DHCP;
+            }
+			else {
+				p_net_inf->NetworkInterface.IPv4.Config.DHCP = FALSE;
+			}
 
 			strcpy(p_net_inf->NetworkInterface.IPv4.Config.Address, inet_ntoa(sin->sin_addr));
 			strncpy(p_net_inf->NetworkInterface.Info.Name, ifr->ifr_name, sizeof(p_net_inf->NetworkInterface.Info.Name)-1); 
@@ -1917,8 +1924,7 @@ NEXT:
 	        	snprintf(p_net_inf->NetworkInterface.Info.HwAddress, sizeof(p_net_inf->NetworkInterface.Info.HwAddress), "%02X:%02X:%02X:%02X:%02X:%02X", 
 					(unsigned char)ifr->ifr_hwaddr.sa_data[0], (unsigned char)ifr->ifr_hwaddr.sa_data[1], (unsigned char)ifr->ifr_hwaddr.sa_data[2],
 					(unsigned char)ifr->ifr_hwaddr.sa_data[3], (unsigned char)ifr->ifr_hwaddr.sa_data[4], (unsigned char)ifr->ifr_hwaddr.sa_data[5]);	
-	        }		
-			
+	        }			
 		}
 		
 		ifr++;
@@ -1927,17 +1933,51 @@ NEXT:
 	closesocket(socket_fd);
 	
 #endif
-
 	
 }
+
+void onvif_build_gateway(char *ipAddr)
+{
+	char *temp = NULL;
+	
+	ONVIF_NetworkInterface * p_net_inf = g_onvif_cfg.network.interfaces;
+	if (p_net_inf && strlen(p_net_inf->NetworkInterface.IPv4.Config.Address) > 0) {
+		strcpy(ipAddr, p_net_inf->NetworkInterface.IPv4.Config.Address);
+		temp = strrchr(ipAddr, '.');
+		ipAddr[temp-ipAddr+1] = '1';
+		ipAddr[temp-ipAddr+2] = '\0';
+	}
+	else {
+		strcpy(ipAddr, "192.168.1.1");
+	}
+}
+
 
 void onvif_init_net()
 {
     const char * dns;
     const char * gw;
+    int ret = -1;
 
     g_onvif_cfg.network.DiscoveryMode = DiscoveryMode_Discoverable;
-    
+
+	// 1.init network interface
+    onvif_NetworkInterface	pNetworkInterface;	
+    ret = GetNetworkInterfaces(&pNetworkInterface);
+	if (ret == 0) {
+		SetNetworkInterfaces(&pNetworkInterface, FALSE);
+		onvif_init_NetworkInterface(&pNetworkInterface);
+	}
+	else {
+		//system_ex("killall udhcpc; udhcpc -i eth0");
+		onvif_init_NetworkInterface(NULL);
+	}
+
+    if (g_onvif_cfg.network.interfaces) {
+        // init zero configuration
+        strcpy(g_onvif_cfg.network.ZeroConfiguration.InterfaceToken, g_onvif_cfg.network.interfaces->NetworkInterface.token);
+    }
+	
 	// init host name
     g_onvif_cfg.network.HostnameInformation.FromDHCP = FALSE;
     g_onvif_cfg.network.HostnameInformation.RebootNeeded = FALSE;
@@ -1945,59 +1985,72 @@ void onvif_init_net()
     gethostname(g_onvif_cfg.network.HostnameInformation.Name, sizeof(g_onvif_cfg.network.HostnameInformation.Name));
 
 	// init dns setting
-    g_onvif_cfg.network.DNSInformation.SearchDomainFlag = 1;
-    g_onvif_cfg.network.DNSInformation.FromDHCP = FALSE;
-    
-    dns = get_dns_server();
-    if (dns && strlen(dns) > 0)
-    {
-    	strcpy(g_onvif_cfg.network.DNSInformation.DNSServer[0], dns);
-    }
-    else
-    {
-    	strcpy(g_onvif_cfg.network.DNSInformation.DNSServer[0], "192.168.1.1");
+	ret = GetDNSInformation(&g_onvif_cfg.network.DNSInformation);
+	if (ret < 0) {
+	    g_onvif_cfg.network.DNSInformation.SearchDomainFlag = 1;
+	    g_onvif_cfg.network.DNSInformation.FromDHCP = FALSE;
+	    
+	    dns = get_dns_server();
+	    if (dns && strlen(dns) > 0){
+	    	strcpy(g_onvif_cfg.network.DNSInformation.DNSServer[0], dns);
+	    }
+		else {
+			onvif_build_gateway(g_onvif_cfg.network.DNSInformation.DNSServer[0]);
+			SetDNSInformation(&g_onvif_cfg.network.DNSInformation, FALSE);
+		}
+		UTIL_INFO("dns==%s", g_onvif_cfg.network.DNSInformation.DNSServer[0]);
+	}
+	else {
+		SetDNSInformation(&g_onvif_cfg.network.DNSInformation, FALSE);
 	}
 
     // init ntp settting
-    g_onvif_cfg.network.NTPInformation.FromDHCP = FALSE;
-    strcpy(g_onvif_cfg.network.NTPInformation.NTPServer[0], "time.windows.com");
-
-    // init network protocol
-    g_onvif_cfg.network.NetworkProtocol.HTTPFlag = 1;
-    g_onvif_cfg.network.NetworkProtocol.HTTPEnabled = 1;
-#ifdef HTTPS    
-    g_onvif_cfg.network.NetworkProtocol.HTTPSFlag = 1;
-    g_onvif_cfg.network.NetworkProtocol.HTTPSEnabled = g_onvif_cfg.https_enable;
-#else
-	g_onvif_cfg.network.NetworkProtocol.HTTPSFlag = 0;
-	g_onvif_cfg.network.NetworkProtocol.HTTPSEnabled = 0;
-#endif
-    g_onvif_cfg.network.NetworkProtocol.RTSPFlag = 1;
-    g_onvif_cfg.network.NetworkProtocol.RTSPEnabled = 1;
-    
-    g_onvif_cfg.network.NetworkProtocol.HTTPPort[0] = 80;
-    g_onvif_cfg.network.NetworkProtocol.HTTPSPort[0] = 443;
-    g_onvif_cfg.network.NetworkProtocol.RTSPPort[0] = 554;
+    ret = GetNTPInformation(&g_onvif_cfg.network.NTPInformation);
+	if (ret < 0) {
+	    g_onvif_cfg.network.NTPInformation.FromDHCP = FALSE;
+	    strcpy(g_onvif_cfg.network.NTPInformation.NTPServer[0], "ntp1.aliyun.com");
+		SetNTPInformation(&g_onvif_cfg.network.NTPInformation, TRUE);
+	}
 
     // init default gateway
-    gw = get_default_gateway();
-    if (gw && strlen(gw) > 0)
-    {
-    	strcpy(g_onvif_cfg.network.NetworkGateway.IPv4Address[0], gw);
-    }
-    else
-    {
-    	strcpy(g_onvif_cfg.network.NetworkGateway.IPv4Address[0], "192.168.1.1");
+    ret = GetNetworkGateway(&g_onvif_cfg.network.NetworkGateway);
+	if (ret < 0) {
+	    gw = get_default_gateway();
+	    if (gw && strlen(gw) > 0) {
+	    	strcpy(g_onvif_cfg.network.NetworkGateway.IPv4Address[0], gw);
+	    }
+		else {
+			onvif_build_gateway(g_onvif_cfg.network.NetworkGateway.IPv4Address[0]);
+			SetNetworkGateway(&g_onvif_cfg.network.NetworkGateway, FALSE);
+		}
+		
+		UTIL_INFO("gw==%s", g_onvif_cfg.network.NetworkGateway.IPv4Address[0]);
+	}
+	else {
+		SetNetworkGateway(&g_onvif_cfg.network.NetworkGateway, FALSE);
 	}
 	
-    // init network interface
-    onvif_init_NetworkInterface();
-
-    if (g_onvif_cfg.network.interfaces)
-    {
-        // init zero configuration
-        strcpy(g_onvif_cfg.network.ZeroConfiguration.InterfaceToken, g_onvif_cfg.network.interfaces->NetworkInterface.token);
-    }
+	// init network protocol
+	ret = GetNetworkProtocols(&g_onvif_cfg.network.NetworkProtocol);
+	if (ret < 0) {
+		g_onvif_cfg.network.NetworkProtocol.HTTPFlag = 1;
+		g_onvif_cfg.network.NetworkProtocol.HTTPEnabled = 1;
+#ifdef HTTPS    
+		g_onvif_cfg.network.NetworkProtocol.HTTPSFlag = 1;
+		g_onvif_cfg.network.NetworkProtocol.HTTPSEnabled = g_onvif_cfg.https_enable;
+#else
+		g_onvif_cfg.network.NetworkProtocol.HTTPSFlag = 0;
+		g_onvif_cfg.network.NetworkProtocol.HTTPSEnabled = 0;
+#endif
+		g_onvif_cfg.network.NetworkProtocol.RTSPFlag = 1;
+		g_onvif_cfg.network.NetworkProtocol.RTSPEnabled = 1;
+		
+		g_onvif_cfg.network.NetworkProtocol.HTTPPort[0] = 80;
+		g_onvif_cfg.network.NetworkProtocol.HTTPSPort[0] = 443;
+		g_onvif_cfg.network.NetworkProtocol.RTSPPort[0] = 554;
+		SetNetworkProtocols(&g_onvif_cfg.network.NetworkProtocol, TRUE);
+	}
+	
 }
 
 #ifdef MEDIA2_SUPPORT
@@ -5768,8 +5821,7 @@ void onvif_chk_server_cfg()
 
     	if (g_onvif_cfg.servs[i].serv_ip[0] == '\0')
     	{
-    		const char * ip = onvif_get_local_ip();
-    		// const char * ip = "0.0.0.0";
+			const char * ip = onvif_get_local_ip();
     		if (ip)
     		{
     			strcpy(g_onvif_cfg.servs[i].serv_ip, ip);
@@ -5789,9 +5841,11 @@ void onvif_init()
 	
 	onvif_init_cfg();
 
+    onvif_init_net();    
+
     onvif_chk_server_cfg();
     
-    onvif_init_net();    
+    // onvif_init_net();        // 放到 onvif_chk_server_cfg()  前面
 
     onvif_eua_init();
     

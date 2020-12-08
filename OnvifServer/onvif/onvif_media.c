@@ -400,14 +400,15 @@ ONVIF_RET onvif_GetStreamUri(const char * lip, uint32 lport, GetStreamUri_REQ * 
 
 	    if (p_req->StreamSetup.Transport.Protocol == TransportProtocol_HTTP)
 	    {
-	        offset += sprintf(p_res->MediaUri.Uri, "http://%s/test.mp4", lip);
+	        offset += sprintf(p_res->MediaUri.Uri, "http://%s/live.sdp", lip);
+	        // offset += sprintf(p_res->MediaUri.Uri, "http://%s/test.mp4", lip);
 	    }
 	    else
 	    {
-	        offset += sprintf(p_res->MediaUri.Uri, "rtsp://%s/test.mp4", lip);
+	        offset += sprintf(p_res->MediaUri.Uri, "rtsp://%s/live.sdp", lip);
 	    }
 
-	    if (StreamType_RTP_Unicast == p_req->StreamSetup.Stream)
+	/*     if (StreamType_RTP_Unicast == p_req->StreamSetup.Stream)
 	    {
 	        offset += snprintf(p_res->MediaUri.Uri+offset, len-offset, "&amp;t=%s", "unicast");
 	    }
@@ -432,7 +433,7 @@ ONVIF_RET onvif_GetStreamUri(const char * lip, uint32 lport, GetStreamUri_REQ * 
 	    {
 	        offset += snprintf(p_res->MediaUri.Uri+offset, len-offset, "&amp;p=%s", "http");
 	    }
-
+ 
         if (p_profile->v_enc_cfg)
         {            
 	        offset += snprintf(p_res->MediaUri.Uri+offset, len-offset, "&amp;ve=%s&amp;w=%d&amp;h=%d", 
@@ -441,6 +442,7 @@ ONVIF_RET onvif_GetStreamUri(const char * lip, uint32 lport, GetStreamUri_REQ * 
 	            p_profile->v_enc_cfg->Configuration.Resolution.Height);
 	        
 	    }
+	
 
 #ifdef AUDIO_SUPPORT
 	    if (p_profile->a_enc_cfg)
@@ -451,6 +453,7 @@ ONVIF_RET onvif_GetStreamUri(const char * lip, uint32 lport, GetStreamUri_REQ * 
 	        
 	    }
 #endif	    
+		*/
 	}
 	else
 	{
@@ -470,49 +473,68 @@ ONVIF_RET onvif_GetStreamUri(const char * lip, uint32 lport, GetStreamUri_REQ * 
  * rlen [in, out], [in] the buff size, [out] the image data size
  *
 **/
-ONVIF_RET onvif_GetSnapshot(char * buff, int * rlen, char * profile_token)
+ONVIF_RET onvif_GetSnapshot(char *buff, int * rlen, char * profile_token)
 {
-    int len;
-    FILE * fp;
+    int len = 0;
+    FILE * fp = NULL;
     ONVIF_PROFILE * p_profile;
+	char *p_bufs = NULL;	
+	int tlen = 0;
+	char * acFile = "/user/snapshot.jpg";
     
     onvif_print("onvif_GetSnapshot\r\n");
-
     p_profile = onvif_find_profile(profile_token);
     if (NULL == p_profile || NULL == p_profile->v_src_cfg)
     {
         return ONVIF_ERR_NoProfile;
     }
-    
-    // todo : here is the test code, just read the image data from file ...
 
-    fp = fopen("snapshot.jpg", "rb");
-	if (NULL == fp)
-	{
-		return ONVIF_ERR_ServiceNotSupported;
-	}
+	if (NULL == buff) return ONVIF_ERR_ServiceNotSupported;
 	
-	fseek(fp, 0, SEEK_END);
-	
-	len = ftell(fp);
-	if (len <= 0)
+    p_bufs = buff;
+    // here is the test code, just read the image data from file ...
+	if (0 == Common_Venc_SnapProcess(acFile))
 	{
+	    fp = fopen(acFile, "rb");
+		if (NULL == fp)
+		{
+			return ONVIF_ERR_ServiceNotSupported;
+		}
+		
+		fseek(fp, 0, SEEK_END);
+		len = ftell(fp);
+		if (len <= 0)
+		{
+			fclose(fp);
+			return ONVIF_ERR_ServiceNotSupported;
+		}
+		fseek(fp, 0, SEEK_SET);
+		
+		if (len > *rlen)
+		{
+		    fclose(fp);
+			return ONVIF_ERR_ServiceNotSupported;
+		}
+		
+		tlen = sprintf(p_bufs,	"HTTP/1.1 200 OK\r\n"
+								"Server: hsoap/2.8\r\n"
+								"Access-Control-Allow-Origin: *\r\n"
+								"Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+								"Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
+								"Content-Type: image/jpeg\r\n"
+								"Content-Length: %d\r\n"
+								"Connection: close\r\n\r\n",
+								len);
+
+		tlen += fread(p_bufs+tlen, 1, len, fp);
 		fclose(fp);
-		return ONVIF_ERR_ServiceNotSupported;
 	}
-	fseek(fp, 0, SEEK_SET);
-	
-	if (len > *rlen)
-	{
-	    fclose(fp);
+	else {
+		*rlen = 0;
 		return ONVIF_ERR_ServiceNotSupported;
 	}
 
-	len = fread(buff, 1, len, fp);
-	
-	fclose(fp);
-
-	*rlen = len;
+	*rlen = tlen;
     
     return ONVIF_OK;
 }

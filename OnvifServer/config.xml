@@ -83,7 +83,7 @@
 	<scope>onvif://www.onvif.org/location/country/china</scope>
 	<scope>onvif://www.onvif.org/type/video_encoder</scope>
 	<scope>onvif://www.onvif.org/name/IP-Camera</scope>
-	<scope>onvif://www.onvif.org/hardware/HI3518C</scope>	
+	<scope>onvif://www.onvif.org/hardware/HI3519A</scope>	
 	<event>
 		<renew_interval>60</renew_interval>	
 		<simulate_enable>1</simulate_enable>

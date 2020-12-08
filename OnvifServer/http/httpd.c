@@ -156,7 +156,10 @@ void http_send_error(HTTPCLN * p_user, int status, const char* title, const char
     offset += snprintf(buff+offset, buflen-offset, "Server: %s\r\n", SERVER_NAME);
     offset += snprintf(buff+offset, buflen-offset, "Date: %s\r\n", timebuf); 
     offset += snprintf(buff+offset, buflen-offset, "Content-Length: %d\r\n", bodyoff);
-    offset += snprintf(buff+offset, buflen-offset, "Content-Type: %s\r\n", "text/html"); 
+    offset += snprintf(buff+offset, buflen-offset, "Content-Type: %s\r\n", "text/html");
+    offset += snprintf(buff+offset, buflen-offset, "Access-Control-Allow-Origin: %s\r\n", "*");
+    offset += snprintf(buff+offset, buflen-offset, "Access-Control-Allow-Methods: %s\r\n", "GET, POST, PUT, OPTIONS");
+    offset += snprintf(buff+offset, buflen-offset, "Access-Control-Allow-Headers: %s\r\n", "Content-Type, Authorization, X-Custom-Header");
     offset += snprintf(buff+offset, buflen-offset, "Connection: close\r\n");
 
     if (exhdr)
@@ -208,6 +211,9 @@ void http_do_output(HTTPCLN * p_user, const char * filename, struct mime_handler
     offset += snprintf(buff+offset, buflen-offset, "%s %d %s\r\n", PROTOCOL, 200, "OK");
     offset += snprintf(buff+offset, buflen-offset, "Server: %s\r\n", SERVER_NAME);
     offset += snprintf(buff+offset, buflen-offset, "Date: %s\r\n", timebuf);
+    offset += snprintf(buff+offset, buflen-offset, "Access-Control-Allow-Origin: %s\r\n", "*");
+    offset += snprintf(buff+offset, buflen-offset, "Access-Control-Allow-Methods: %s\r\n", "GET, POST, PUT, OPTIONS");
+    offset += snprintf(buff+offset, buflen-offset, "Access-Control-Allow-Headers: %s\r\n", "Content-Type, Authorization, X-Custom-Header");
     offset += snprintf(buff+offset, buflen-offset, "Content-Type: %s\r\n", p_handler->mime_type);        
     offset += snprintf(buff+offset, buflen-offset, "Connection: close\r\n");
     offset += snprintf(buff+offset, buflen-offset, "\r\n");
@@ -307,12 +313,39 @@ void http_process_request(HTTPCLN * p_user, HTTPMSG * rx_msg)
 	char filename[1000] = {'\0'}, * query, * file;
 
 	struct mime_handler *handler;
-    
+
+
 	if (sscanf(rx_msg->msg_buf, "%[^ ] %[^ ] %[^ ]", method, path, protocol) != 3) 
 	{
         http_send_error(p_user, 400, "Bad Request", NULL, "Can't parse request.");
         return;
     }
+
+    if (strcasecmp(method, "options") == 0)
+    {        
+        // int olen;
+        // char *p_ores;
+        char *p_ores = "HTTP/1.1 204 No Content\r\n"
+                     "Access-Control-Allow-Origin: http://192.168.3.233:8080\r\n"
+                     "Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+                     "Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
+                     "Connection: close\r\n";
+
+	        // offset += sprintf(p_res->MediaUri.Uri, "http://%s/test.mp4", lip);
+
+        	/* olen = sprintf(p_ores,"HTTP/1.1 204 No Content\r\n"
+                     "Access-Control-Allow-Origin: %s\r\n"
+                     "Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+                     "Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
+                     "Connection: close\r\n", "http://192.168.3.233:8080"); */
+     
+        int olen = strlen(p_ores);
+        // send(p_user->cfd, "HTTP/1.1 204 No Content\r\nAccess-Control-Allow-Origin: *\r\n", sizeof("HTTP/1.1 204 No Content\r\nAccess-Control-Allow-Origin: *\r\n"), 0);
+        send(p_user->cfd, p_ores, olen, 0);
+
+        return;
+    }
+    
 
     if (strcasecmp(method, "get") != 0 && strcasecmp(method, "post") != 0) 
     {

@@ -2110,37 +2110,51 @@ ONVIF_RET parse_SetImagingSettings(XMLN * p_node, SetImagingSettings_REQ * p_req
 		if (p_Focal && p_Focal->data)
 		{
 			p_req->ImagingSettings.DulaInfo.focal = (int)atoi(p_Focal->data);
+		}else{
+			p_req->ImagingSettings.DulaInfo.focal = -1;
 		}
 		p_Lens = xml_node_soap_get(p_DulaInfoSettings, "Lens");
 		if (p_Lens && p_Lens->data)
 		{
 			p_req->ImagingSettings.DulaInfo.lens = (float)atof(p_Lens->data);
+		}else{
+			p_req->ImagingSettings.DulaInfo.lens = -1;
 		}
 		p_Distance = xml_node_soap_get(p_DulaInfoSettings, "Distance");
 		if (p_Distance && p_Distance->data)
 		{
 			p_req->ImagingSettings.DulaInfo.distance = (float)atof(p_Distance->data);
+		}else{
+			p_req->ImagingSettings.DulaInfo.distance = -1;
 		}
 		p_DulaModel = xml_node_soap_get(p_DulaInfoSettings, "DulaModel");
 		if (p_DulaModel && p_DulaModel->data)
 		{
 			p_req->ImagingSettings.DulaInfo.dula_model = (int)atoi(p_DulaModel->data);
+		}else{
+			p_req->ImagingSettings.DulaInfo.dula_model = -1;
 		}
 
 		p_X = xml_node_soap_get(p_DulaInfoSettings, "X");
 		if (p_X && p_X->data)
 		{
 			p_req->ImagingSettings.DulaInfo.x = (signed short int)atoi(p_X->data);
+		}else{
+			p_req->ImagingSettings.DulaInfo.x = -1;
 		}
 		p_Y = xml_node_soap_get(p_DulaInfoSettings, "Y");
 		if (p_Y && p_Y->data)
 		{
 			p_req->ImagingSettings.DulaInfo.y = (signed short int)atoi(p_Y->data);
+		}else{
+			p_req->ImagingSettings.DulaInfo.y = -1;
 		}
 		p_Scale = xml_node_soap_get(p_DulaInfoSettings, "Scale");
 		if (p_Scale && p_Scale->data)
 		{
 			p_req->ImagingSettings.DulaInfo.scale = (float)atof(p_Scale->data);
+		}else{
+			p_req->ImagingSettings.DulaInfo.scale = -1;
 		}
 	}
 

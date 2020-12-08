@@ -16,7 +16,7 @@ extern "C" {
 
 
 //结构体版本
-#define CFG_FOLDER					("./cfg_files/")
+#define CFG_FOLDER					("/user/cfg_files/")
 #define MAGIC_NUM   				(0x5a5a5a5a)
 
 
@@ -64,15 +64,13 @@ int save_cfg_to_file(char* file,char* cfg, int len)
 
 
 	//创建文件
-	fd=open(file,O_WRONLY|O_CREAT|O_SYNC,777);
-	// fd=open(CFG_FOLDER, O_WRONLY|O_CREAT|O_SYNC,777);
+	fd=open(file,O_WRONLY|O_CREAT,777);
 	if(fd<=0)
 		return -1;
 
 	//写入结构体信息
 	if(write(fd,cfg, len) != len)
 	{
-		fsync(fd);
 		close(fd);
 		return -1;
 	}
@@ -80,7 +78,6 @@ int save_cfg_to_file(char* file,char* cfg, int len)
 	//写入魔数
 	if(write(fd,&MagicNum, sizeof(MagicNum)) != sizeof(MagicNum) )
 	{
-		fsync(fd);
 		close(fd);
 		return -1;
 	}
@@ -97,8 +94,12 @@ int read_cfg_from_file(char* file,char *cfg,int len)
 	int fd;
 	unsigned int MagicNum;
 
-	fd=open(file,O_RDONLY);
-	if(fd<=0)
+    if (!file || (file && 0 != access(file, F_OK))) {
+		return -1;
+    }
+	
+	fd = open(file,O_RDONLY);
+	if (fd<=0)
 		return -1;
 
 	//读入配置

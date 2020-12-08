@@ -173,17 +173,18 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 		 if (p_req->ImagingSettings.SharpnessFlag != 1)
 			p_req->ImagingSettings.Sharpness = -1;
 		
-		ImgParam_t  imgParams;
-		memset(&imgParams, 0, sizeof(ImgParam_t));
+		ImgParam_t  setImgParams;
+		memset(&setImgParams, 0, sizeof(ImgParam_t));
 		
-		imgParams.brightness =  p_req->ImagingSettings.Brightness;
-		imgParams.saturation =  p_req->ImagingSettings.ColorSaturation;
-		imgParams.contrast =  p_req->ImagingSettings.Contrast;
-		imgParams.sharp =  p_req->ImagingSettings.Sharpness;
+		setImgParams.brightness =  p_req->ImagingSettings.Brightness;
+		setImgParams.saturation =  p_req->ImagingSettings.ColorSaturation;
+		setImgParams.contrast =  p_req->ImagingSettings.Contrast;
+		setImgParams.sharp =  p_req->ImagingSettings.Sharpness;
 
-		if (setImgParam(&imgParams) != 0)
+		if (setImgParam(&setImgParams) != 0)
 			printf("set img param faile.\n");
 	}
+
 
 	 if ( p_req->ImagingSettings.ThermalSettings.ThermalSet_ext1Flag == 1 )
 	{
@@ -412,13 +413,26 @@ ONVIF_RET onvif_SetImagingSettings(SetImagingSettings_REQ * p_req)
 	if ( p_req->ImagingSettings.DulaInformationFlag == 1 ){
 		g_onvif_cfg.ImagingSettings.DulaInformationFlag =  p_req->ImagingSettings.DulaInformationFlag;
 
-		g_onvif_cfg.ImagingSettings.DulaInfo.focal = p_req->ImagingSettings.DulaInfo.focal;
-		g_onvif_cfg.ImagingSettings.DulaInfo.lens  =  p_req->ImagingSettings.DulaInfo.lens;
-		g_onvif_cfg.ImagingSettings.DulaInfo.distance = p_req->ImagingSettings.DulaInfo.distance;
-		g_onvif_cfg.ImagingSettings.DulaInfo.dula_model = 	p_req->ImagingSettings.DulaInfo.dula_model;
-		g_onvif_cfg.ImagingSettings.DulaInfo.x  = p_req->ImagingSettings.DulaInfo.x;
-		g_onvif_cfg.ImagingSettings.DulaInfo.y  = p_req->ImagingSettings.DulaInfo.y;
-		g_onvif_cfg.ImagingSettings.DulaInfo.scale = p_req->ImagingSettings.DulaInfo.scale;
+		if (p_req->ImagingSettings.DulaInfo.focal != -1)
+			g_onvif_cfg.ImagingSettings.DulaInfo.focal = p_req->ImagingSettings.DulaInfo.focal;
+
+		if (p_req->ImagingSettings.DulaInfo.lens != -1)
+			g_onvif_cfg.ImagingSettings.DulaInfo.lens  =  p_req->ImagingSettings.DulaInfo.lens;
+
+		if (p_req->ImagingSettings.DulaInfo.distance != -1)
+			g_onvif_cfg.ImagingSettings.DulaInfo.distance = p_req->ImagingSettings.DulaInfo.distance;
+
+		if (p_req->ImagingSettings.DulaInfo.dula_model != -1)
+			g_onvif_cfg.ImagingSettings.DulaInfo.dula_model = 	p_req->ImagingSettings.DulaInfo.dula_model;
+
+		if (p_req->ImagingSettings.DulaInfo.x != -1)
+			g_onvif_cfg.ImagingSettings.DulaInfo.x  = p_req->ImagingSettings.DulaInfo.x;
+
+		if (p_req->ImagingSettings.DulaInfo.y != -1)
+			g_onvif_cfg.ImagingSettings.DulaInfo.y  = p_req->ImagingSettings.DulaInfo.y;
+
+		if (p_req->ImagingSettings.DulaInfo.scale != -1)
+			g_onvif_cfg.ImagingSettings.DulaInfo.scale = p_req->ImagingSettings.DulaInfo.scale;
 	}
 	////
 	
@@ -466,7 +480,7 @@ ONVIF_RET onvif_img_Stop(const char * VideoSourceToken)
 	}
 
     // todo : add stop move code ...
-    
+       img_Stop();
 	return ONVIF_OK;
 }
 

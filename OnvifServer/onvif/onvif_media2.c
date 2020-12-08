@@ -1145,14 +1145,14 @@ ONVIF_RET onvif_tr2_GetStreamUri(const char * lip, uint32 lport, tr2_GetStreamUr
 
 	    if (stricmp(p_req->Protocol, "RtspOverHttp") == 0)
 	    {
-	        offset += snprintf(p_res->Uri, len, "http://%s/test.mp4", lip);
+	        offset += snprintf(p_res->Uri, len, "http://%s/live.sdp", lip);
 	    }
 	    else
 	    {
-	        offset += snprintf(p_res->Uri, len, "rtsp://%s/test.mp4", lip);
+	        offset += snprintf(p_res->Uri, len, "rtsp://%s/live.sdp", lip);
 	    }
 
-	    if (strcasecmp(p_req->Protocol, "RtspUnicast") == 0)
+	 /*    if (strcasecmp(p_req->Protocol, "RtspUnicast") == 0)
 	    {
 	        offset += snprintf(p_res->Uri+offset, len-offset, "&amp;t=%s", "unicast");
 	        offset += snprintf(p_res->Uri+offset, len-offset, "&amp;p=%s", "udp");
@@ -1190,7 +1190,8 @@ ONVIF_RET onvif_tr2_GetStreamUri(const char * lip, uint32 lport, tr2_GetStreamUr
 	            p_profile->a_enc_cfg->Configuration.SampleRate * 1000);
 	        
 	    }
-#endif	    
+#endif	 
+		*/
 	}
 	else
 	{

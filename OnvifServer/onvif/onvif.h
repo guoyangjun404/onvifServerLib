@@ -110,6 +110,7 @@ typedef struct
 {
     BOOL    UsedFlag;
     
+	uint32   zoomVal;								// add by xieqingpu 加了摄像机焦距,目的是使预置位对应相应的焦距
     onvif_PTZPreset	PTZPreset;
 } ONVIF_PTZPreset;
 

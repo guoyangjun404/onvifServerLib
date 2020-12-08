@@ -61,13 +61,17 @@ error_code  pelco_close()
 error_code pelco_Init( char* device, u_int32 baud_rate)
 {
 	u_int32 ticks = 0;
-    int ret =RET_ERR;
+    int ret = RET_ERR;
 	char *f = "pelcoInit";
-    if(device==NULL)return ret;
-    ///dev/ttyAMA%u
-    //sprintf(buf,"/dev/ttyAMA%u",comport);
-	//sprintf(buf,"/dev/ttyUSB%u",comport);
-    
+    if (NULL == device) {
+		return ret;
+    }
+
+	if (device && 0 != access(device, F_OK)) {
+		printf("device==%s no exsit!!!\n", device);
+		return ret;
+	}
+	
 	if( (*fd = open(device,O_RDWR|O_NOCTTY)) < 0 )
 	{
 		printf("ERROR:%s:\n",f);
@@ -143,14 +147,7 @@ error_code pelcoWrite( unsigned char *buf, u_int32 size )
 			sleep(2);
 		}
 	}
-
-	///
-/* 	for(int i=0;i<size;i++)
-	{
-		printf("%x  ", buf[i]);
-	}
-    printf("\n"); */
-	///
+	
 	return ec;
 }
 /*
@@ -257,6 +254,7 @@ unsigned char get_checksum(unsigned char * buf ,int size)
 	return ret;
 }
 
+/* 校验码(第7字节),第2-6个字节和 */
 void pelcoChecksum(void)
 {
 	int i;
@@ -361,7 +359,8 @@ error_code pelco_left_down(unsigned short force)
 	pelco[p_cmd1] = 0x00;
 	pelco[p_cmd2] = 0x14;
 	pelco[p_data1] = force;
-	pelco[p_data2] = force>>8;
+	pelco[p_data2] = force;
+	// pelco[p_data2] = force>>8;
 	pelcoChecksum();
 	pelcoWrite(pelco,sizeof(pelco));
     ret=RET_OK;
@@ -381,8 +380,9 @@ error_code pelco_left_up(unsigned short force)
 	pelco[p_cmd1] = 0x00;
 	pelco[p_cmd2] = 0x0c;
 	pelco[p_data1] = force;
-	pelco[p_data2] = force>>8;
-	pelcoChecksum();
+	pelco[p_data2] = force;
+	// pelco[p_data2] = force>>8;
+	pelcoChecksum();	//校验码(第7字节)
 	pelcoWrite(pelco,sizeof(pelco));
     ret=RET_OK;
 	return ret;
@@ -401,7 +401,8 @@ error_code pelco_right_down(unsigned short force)
 	pelco[p_cmd1] = 0x00;
 	pelco[p_cmd2] = 0x12;
 	pelco[p_data1] = force;
-	pelco[p_data2] = force>>8;
+	pelco[p_data2] = force;
+	// pelco[p_data2] = force>>8;
 	pelcoChecksum();
 	pelcoWrite(pelco,sizeof(pelco));
     ret=RET_OK;
@@ -421,7 +422,8 @@ error_code pelco_right_up(unsigned short force)
 	pelco[p_cmd1] = 0x00;
 	pelco[p_cmd2] = 0x0a;
 	pelco[p_data1] = force;
-	pelco[p_data2] = force>>8;
+	pelco[p_data2] = force;
+	// pelco[p_data2] = force>>8;
 	pelcoChecksum();
 	pelcoWrite(pelco,sizeof(pelco));
     ret=RET_OK;

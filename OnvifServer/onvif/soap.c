@@ -168,6 +168,9 @@ int soap_http_rly(HTTPCLN * p_user, HTTPMSG * rx_msg, const char * p_xml, int le
 	
 	tlen = sprintf(p_bufs,	"HTTP/1.1 200 OK\r\n"
 							"Server: hsoap/2.8\r\n"
+							"Access-Control-Allow-Origin: *\r\n"
+							"Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+							"Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
 							"Content-Type: %s\r\n"
 							"Content-Length: %d\r\n"
 							"Connection: close\r\n\r\n",
@@ -227,6 +230,9 @@ int soap_http_err_rly(HTTPCLN * p_user, HTTPMSG * rx_msg, int err_code, const ch
 	
 	tlen = sprintf(p_bufs,	"HTTP/1.1 %d %s\r\n"
 							"Server: hsoap/2.8\r\n"
+							"Access-Control-Allow-Origin: *\r\n"
+							"Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+							"Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
 							"Content-Type: %s\r\n"
 							"Content-Length: %d\r\n"
 							"%s"
@@ -1250,13 +1256,13 @@ int soap_SetNetworkInterfaces(HTTPCLN * p_user, HTTPMSG * rx_msg, XMLN * p_body,
 		}
 	}
 
-    if (ret > 0)
+    /*if (ret > 0)
     {
 	    // send onvif hello message 
 	    sleep(3);
         onvif_hello();
         return ret;
-    }
+    }*/
     
 	return soap_build_err_rly(p_user, rx_msg, ret);
 }
@@ -1882,7 +1888,7 @@ int soap_AddScopes(HTTPCLN * p_user, HTTPMSG * rx_msg, XMLN * p_body, XMLN * p_h
         {
     		r = soap_build_send_rly(p_user, rx_msg, build_AddScopes_rly_xml, NULL, NULL, p_header);
 
-    		onvif_hello();
+    		//onvif_hello();
     		return r;
     	}
     }
@@ -1912,7 +1918,7 @@ int soap_SetScopes(HTTPCLN * p_user, HTTPMSG * rx_msg, XMLN * p_body, XMLN * p_h
         {
     		r = soap_build_send_rly(p_user, rx_msg, build_SetScopes_rly_xml, NULL, NULL, p_header);
 
-    		onvif_hello();
+    		//onvif_hello();
     		return r;
     	}
     }
@@ -1942,7 +1948,7 @@ int soap_RemoveScopes(HTTPCLN * p_user, HTTPMSG * rx_msg, XMLN * p_body, XMLN * 
         {
     		r = soap_build_send_rly(p_user, rx_msg, build_RemoveScopes_rly_xml, (char *)&req, NULL, p_header);
 
-    		onvif_hello();
+    		//onvif_hello();
     		return r;
     	}
     }
@@ -2812,6 +2818,8 @@ void soap_FirmwareUpgrade(HTTPCLN * p_user, HTTPMSG * rx_msg)
 {
 	char * p_buff = http_get_ctt(rx_msg);
 	
+	onvif_print("%s\r\n", __FUNCTION__);
+	onvif_print("rx_msg->ctt_len===%d\n", rx_msg->ctt_len);
 	if (onvif_FirmwareUpgradeCheck(p_buff, rx_msg->ctt_len))
 	{
 		if (onvif_FirmwareUpgrade(p_buff, rx_msg->ctt_len))
@@ -2872,8 +2880,8 @@ void soap_SystemRestore(HTTPCLN * p_user, HTTPMSG * rx_msg)
 
 void soap_GetSnapshot(HTTPCLN * p_user, HTTPMSG * rx_msg)
 {
-    char buff[200*1024];    // JPEG image buff, max 200K
-    int  rlen = sizeof(buff);
+    char *p_bufs = NULL;    
+    int  rlen = 1500*1024;
     char profile_token[ONVIF_TOKEN_LEN] = {'\0'};
 
     // get profile token
@@ -2911,46 +2919,40 @@ void soap_GetSnapshot(HTTPCLN * p_user, HTTPMSG * rx_msg)
         soap_http_err_rly(p_user, rx_msg, 500, "Internal Server Error", NULL, 0);
         return;
     }
-    
-    if (ONVIF_OK == onvif_GetSnapshot(buff, &rlen, profile_token))
+	
+	p_bufs = (char *)malloc(rlen);
+	if (NULL == p_bufs)
+	{
+		soap_http_err_rly(p_user, rx_msg, 500, "Internal Server Error", NULL, 0);
+		return;
+	}
+	
+    if (ONVIF_OK == onvif_GetSnapshot(p_bufs, &rlen, profile_token))
     {
-    	int tlen;
-        char * p_bufs = (char *)malloc(rlen + 1024);
-    	if (NULL == p_bufs)
-    	{
-    	    soap_http_err_rly(p_user, rx_msg, 500, "Internal Server Error", NULL, 0);
-    		return;
-    	}
-    	
-    	tlen = sprintf(p_bufs,	"HTTP/1.1 200 OK\r\n"
-								"Server: hsoap/2.8\r\n"
-								"Content-Type: image/jpeg\r\n"
-								"Content-Length: %d\r\n"
-								"Connection: close\r\n\r\n",
-								rlen);
-
-    	memcpy(p_bufs+tlen, buff, rlen);
-    	tlen += rlen;
-
 #ifdef HTTPS 
 		if (g_onvif_cfg.https_enable)
 		{
-			SSL_write(p_user->ssl, p_bufs, tlen);
+			SSL_write(p_user->ssl, p_bufs, rlen);
 		}
 		else
 		{
-			send(p_user->cfd, p_bufs, tlen, 0);
+			send(p_user->cfd, p_bufs, rlen, 0);
 		}
 #else
-    	send(p_user->cfd, p_bufs, tlen, 0);
+    	send(p_user->cfd, p_bufs, rlen, 0);
 #endif
 
-    	free(p_bufs);
     }
     else
     {
         soap_http_err_rly(p_user, rx_msg, 500, "Internal Server Error", NULL, 0);
     }
+
+	if (p_bufs)
+	{
+		free(p_bufs);
+		p_bufs = NULL;
+	}
 }
 
 void soap_GetHttpSystemLog(HTTPCLN * p_user, HTTPMSG * rx_msg)
@@ -2972,6 +2974,9 @@ void soap_GetHttpSystemLog(HTTPCLN * p_user, HTTPMSG * rx_msg)
 	
 	tlen = sprintf(p_bufs,	"HTTP/1.1 200 OK\r\n"
 							"Server: hsoap/2.8\r\n"
+							"Access-Control-Allow-Origin: *\r\n"
+							"Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+							"Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
 							"Content-Type: text/plain\r\n"
 							"Content-Length: %d\r\n"
 							"Connection: close\r\n\r\n",
@@ -3015,6 +3020,9 @@ void soap_GetHttpAccessLog(HTTPCLN * p_user, HTTPMSG * rx_msg)
 	
 	tlen = sprintf(p_bufs,	"HTTP/1.1 200 OK\r\n"
 							"Server: hsoap/2.8\r\n"
+							"Access-Control-Allow-Origin: *\r\n"
+							"Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+							"Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
 							"Content-Type: text/plain\r\n"
 							"Content-Length: %d\r\n"
 							"Connection: close\r\n\r\n",
@@ -3058,6 +3066,9 @@ void soap_GetSupportInfo(HTTPCLN * p_user, HTTPMSG * rx_msg)
 	
 	tlen = sprintf(p_bufs,	"HTTP/1.1 200 OK\r\n"
 							"Server: hsoap/2.8\r\n"
+							"Access-Control-Allow-Origin: *\r\n"
+							"Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+							"Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
 							"Content-Type: text/plain\r\n"
 							"Content-Length: %d\r\n"
 							"Connection: close\r\n\r\n",
@@ -3101,6 +3112,9 @@ void soap_GetSystemBackup(HTTPCLN * p_user, HTTPMSG * rx_msg)
 	
 	tlen = sprintf(p_bufs,	"HTTP/1.1 200 OK\r\n"
 							"Server: hsoap/2.8\r\n"
+							"Access-Control-Allow-Origin: *\r\n"
+							"Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS\r\n"
+							"Access-Control-Allow-Headers: Content-Type, Authorization, X-Custom-Header\r\n"
 							"Content-Type: text/plain\r\n"
 							"Content-Length: %d\r\n"
 							"Connection: close\r\n\r\n",

@@ -781,12 +781,12 @@ int build_GetStreamUri_rly_xml(char * p_buf, int mlen, const char * argv)
 			    "<tt:Timeout>PT%dS</tt:Timeout>"
 		    "</trt:MediaUri>"
 	    "</trt:GetStreamUriResponse>", 
-	    p_res->MediaUri.Uri,
+		p_res->MediaUri.Uri,
 	    p_res->MediaUri.InvalidAfterConnect ? "true" : "false",
 	    p_res->MediaUri.InvalidAfterReboot ? "true" : "false",
 	    p_res->MediaUri.Timeout);
 
-    onvif_print("rtspuri : %s\n", p_res->MediaUri.Uri);
+    // onvif_print("======= build_GetStreamUri_rly_xml | rtspuri : %s =========\n", p_res->MediaUri.Uri);
 
 	return offset;
 }
@@ -2173,7 +2173,7 @@ int build_GetSystemDateAndTime_rly_xml(char * p_buf, int mlen, const char * argv
 			"<tt:TimeZone><tt:TZ>%s</tt:TZ></tt:TimeZone>", 
 			g_onvif_cfg.SystemDateTime.TimeZone.TZ);			
 	}
-	
+		
 	offset += snprintf(p_buf+offset, mlen-offset, 			
 			"<tt:UTCDateTime>"
 				"<tt:Time>"
@@ -7341,11 +7341,16 @@ int build_GetPresets_rly_xml(char * p_buf, int mlen, const char * argv)
     }
 
 	//// add by xieqingpu
-/* 	if (readPtzPreset(p_profile->presets, 64) != 0)		// 64:由于云台设备最多支持64个预置位
-		printf("read PTZ preset faile.\n");
-	for(int i = 0; i < 64; i++)
+	if (readPtzPreset(p_profile->presets, 128) != 0)		// 128:由于云台设备支持128个预置位
 	{
-		printf("xxx Preset[%d],token:%s Name:%s\n",i, p_profile->presets[i].PTZPreset.token, p_profile->presets[i].PTZPreset.Name);
+		printf("read PTZ preset faile.\n");
+	}
+	/* else{
+		for(int j = 0; j < 64; j++)
+		{
+			printf("xxx read1 p_profile->presets[%d].UsedFlag:%d\n",j, p_profile->presets[j].UsedFlag);
+			printf("xxx read1 Preset[%d],token:%s Name:%s\n\n",j, p_profile->presets[j].PTZPreset.token, p_profile->presets[j].PTZPreset.Name);
+		}
 	} */
 	////
 
@@ -7357,6 +7362,9 @@ int build_GetPresets_rly_xml(char * p_buf, int mlen, const char * argv)
 	    {
 	        continue;
 	    }
+		/////
+		/* printf("xxx read2 p_profile->presets[%d].UsedFlag:%d\n",i, p_profile->presets[i].UsedFlag);
+		printf("xxx read2 Preset[%d],token:%s Name:%s\n",i, p_profile->presets[i].PTZPreset.token, p_profile->presets[i].PTZPreset.Name); */
 	    
     	offset += snprintf(p_buf+offset, mlen-offset, 
     		"<tptz:Preset token=\"%s\">",
@@ -11107,7 +11115,7 @@ int build_tr2_GetStreamUri_rly_xml(char * p_buf, int mlen, const char * argv)
 		    "<tr2:Uri>%s</tr2:Uri>"
 	    "</tr2:GetStreamUriResponse>", p_res->Uri);
 
-    onvif_print("rtspuri : %s\n", p_res->Uri);
+    // onvif_print("======== build_tr2_GetStreamUri_rly_xml | rtspuri : %s ==========\n", p_res->Uri);
     
 	return offset;
 }

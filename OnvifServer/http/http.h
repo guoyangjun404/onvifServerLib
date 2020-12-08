@@ -36,6 +36,7 @@ typedef enum http_request_msg_type
 	HTTP_MT_POST,
 	HTTP_MT_SUBSCRIBE,
 	HTTP_MT_UNSUBSCRIBE,
+	HTTP_MT_OPTIONS,
 } HTTP_MT;
 
 /***************************************************************************************/

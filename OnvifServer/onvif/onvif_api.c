@@ -27,7 +27,7 @@
 #include "onvif.h"
 #include "onvif_timer.h"
 #include "onvif_api.h"
-
+#include "utils_log.h"
 #include "set_config.h"
 
 /***************************************************************************************/
@@ -70,8 +70,11 @@ void * onvif_task(void * argv)
 			{
 			case ONVIF_MSG_SRC:
 				http_msg_handler(p_cln, (HTTPMSG *)stm.msg_buf);
-				if (stm.msg_buf) http_free_msg((HTTPMSG *)stm.msg_buf);
-				if (p_cln) http_free_cln((HTTPSRV *)p_cln->p_srv, p_cln);
+				
+				if (stm.msg_buf) 
+					http_free_msg((HTTPMSG *)stm.msg_buf);
+				if (p_cln) 
+					http_free_cln((HTTPSRV *)p_cln->p_srv, p_cln);
 				break;
 
 			case ONVIF_DEL_UA_SRC:
@@ -104,8 +107,8 @@ void onvif_start()
 
 	if (logEnable)
 	{
-		printf("log_enable = %d. +++++++ 0:close, 1:open  +++++++\n", logEnable);
-		log_init("ipsee.txt");
+/* 		printf("log_enable = %d. +++++++ 0:close, 1:open  +++++++\n", logEnable);
+		log_init("onvif_log.txt"); */
 		// log_set_level(LOG_DBG);
 	}
 
@@ -125,11 +128,11 @@ void onvif_start()
         if (http_srv_init(&http_srv[i], g_onvif_cfg.servs[i].serv_ip, g_onvif_cfg.servs[i].serv_port, 
             g_onvif_cfg.http_max_users, g_onvif_cfg.https_enable) < 0)
     	{
-    		printf("http server listen on %s:%d failed\r\n", g_onvif_cfg.servs[i].serv_ip, g_onvif_cfg.servs[i].serv_port);
+    		UTIL_INFO("http server listen on %s:%d failed", g_onvif_cfg.servs[i].serv_ip, g_onvif_cfg.servs[i].serv_port);
     	}
     	else
     	{
-    	    printf("\nOnvif server running at %s:%d\r\n", g_onvif_cfg.servs[i].serv_ip, g_onvif_cfg.servs[i].serv_port);
+    	    UTIL_INFO("Onvif server running at %s:%d", g_onvif_cfg.servs[i].serv_ip, g_onvif_cfg.servs[i].serv_port);
     	}
     }
 

@@ -2,6 +2,17 @@
 #ifndef __SET_CONFIG_H__
 #define	__SET_CONFIG_H__
 
+#include <time.h>
+#include <errno.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+
+#include "onvif.h"
+#include "onvif_device.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,11 +117,11 @@ typedef struct
 } CONFIG_Information;
 
 //用户信息
-#define  USER_LEVEL_ADMINISTRATOR  "Administrator" 
+/* #define  USER_LEVEL_ADMINISTRATOR  "Administrator" 
 #define  USER_LEVEL_OPERATOR       "Operator"
 #define  USER_LEVEL_USER           "User"
 #define  USER_LEVEL_ANONYMOUS      "Anonymous"
-#define  USER_LEVEL_EXTENDED       "Extended"
+#define  USER_LEVEL_EXTENDED       "Extended" */
 typedef enum  
 {
 	_Administrator = 0, 
@@ -147,8 +158,14 @@ typedef struct
 } CONFIG_Scopes;    */
 ///////
 
+//主位置
+typedef struct
+{
+	u16_t homeZoom;						// required
+} CONFIG_Home;
 
-//预置位 , 由于读写函数需要参数一致，所以以下preset结构体与onvif的成员一样
+
+//预置位 , 由于读写函数需要参数一致，所以以下preset结构体与onvif的结构体成员一样
 typedef struct
 {
 	float	x;										    // required
@@ -180,10 +197,9 @@ typedef struct
 typedef struct
 {
     BOOL    UsedFlag;
+	uint32   zoomVal;								// 加了摄像机焦距,目的是使预置位对应相应的焦距
     config_PTZPreset  PTZPreset;
 } CONFIG_PTZPreset;
-
-
 
 
 
@@ -233,12 +249,7 @@ typedef struct
 * Params  :                                
 **********************************************/
 void logOpen();
-
-/*********************************************
-* FuncName: logClose       
-* Describe:  log关, log文件为"ipsee.txt"
-* Params  :                                
-**********************************************/
+//log关
 void logClose();
 
 
@@ -298,7 +309,6 @@ int readUsers(CONFIG_User *users, int cnt);
 int writeUsers(CONFIG_User *users, int cnt);
 
 
-
 /*********************************************
 * FuncName: devInit       
 * Describe:  设备初始化
@@ -317,15 +327,15 @@ int devInit(char *ptzDevID, const char *cameraDEVID);
 *    Zspeed : 水平转动速度  -为缩小焦距，+为放大焦距
 * Return  :                                                  
 **********************************************/
-void controlPtzPos(float Xspeed, float Yspeed, float Zspeed);
+void controlPtzPos(float X, float Y, float Z , unsigned short Speed);
 
 /*********************************************
 * FuncName: ptzStop       
 * Describe: 停止转动
-* Params  :                                
-* Return  :   0：success                                               
+* Params  :                                                                          
 **********************************************/
-int ptzStop();
+void ptzStop();
+
 
 /*********************************************
 * FuncName: setPtzPreset       
@@ -340,9 +350,6 @@ void setPtzPreset(unsigned short location);
 /*********************************************
 * FuncName: gotoPtzPreset       
 * Describe:  转到PTZ的预置位
-* Params  :                                
-* [OUT]      
-*    speed : 方位 
 * Return  :                                                  
 **********************************************/
 void gotoPtzPreset(unsigned short location);
@@ -433,7 +440,7 @@ int setThermalParam2(ThermalParam2_t *thermalParam2);
 
 /*********************************************
 * FuncName: getDulaParam        
-* Describe:  获取dula参数数据
+* Describe:  从保存的文件读取 dula参数数据
 * Params  :                                
 * [IN]      
 *   dulaInfo :  获取dulaInfo数据参数
@@ -443,7 +450,7 @@ int getDulaParam(DulaInformation_t *dulaInfo);
 
 /*********************************************
 * FuncName: setDulaParam        
-* Describe:  设置dula参数数据
+* Describe:  设置dula参数数据 ,同时保存到文件
 * Params  :                                
 * [OUT]      
 *   dulaInfo :  设置dulaInfo数据
@@ -451,6 +458,81 @@ int getDulaParam(DulaInformation_t *dulaInfo);
 **********************************************/
 int setDulaParam(DulaInformation_t *dulaInfo);
 
+int vpclose(FILE *fp);  
+FILE *vpopen(const char* cmdstring, const char *type);  
+
+//尽量使用system_ex替换system函数，因为在很多系统里面发现system存在隐患
+#define system_ex(fmt, args...)                   \
+    do{                                             \
+        char readbuf[512]={0};                      \
+        int debug=0;                                    \
+        snprintf(readbuf, sizeof(readbuf), fmt, ##args);\
+        if(debug==1) printf("%s\n", readbuf);            \
+        FILE *fp=vpopen(readbuf,"r");                    \
+        if(fp!=NULL){                                     \
+			memset(readbuf, 0x0, sizeof(readbuf));         \
+			while(fgets(readbuf, sizeof(readbuf), fp) != NULL) {\
+				if(debug==1) printf("%s\n", readbuf);\
+			}\
+			vpclose(fp); \
+		}                      \
+    }while(0)
+
+void Set_Start_NTP_Server(int flag);
+int Get_Start_NTP_Server();
+
+
+int GetNTPInformation(onvif_NTPInformation		    *pNTPInformation);
+	
+/* 保存NTPInformation数据参数*/
+int SetNTPInformation(onvif_NTPInformation		    *pNTPInformation, BOOL isSave);
+
+/* 读取 SystemDateTime数据参数 */
+int GetSystemDateTime(onvif_SystemDateTime *pDataTimeInfo);
+int opt_SetSystemDateTime(onvif_DateTime *pUTCDateTime);
+
+time_t SystemTimeToTM(onvif_DateTime stStartTime);
+	
+/* 保存SystemDateTime数据参数*/
+int SetSystemDateTime(onvif_SystemDateTime *pDataTimeInfo, 
+								onvif_DateTime *pUTCDateTime, BOOL isSave);
+
+
+/*1 读取TCPIP数据参数 */
+int GetNetworkInterfaces(onvif_NetworkInterface	*pNetworkInterface);
+
+int opt_SetNetworkInterfaces(onvif_NetworkInterface	*pNetworkInterface);
+
+/* 保存SystemDateTime数据参数*/
+int SetNetworkInterfaces(onvif_NetworkInterface	*pNetworkInterface, BOOL isSave);
+
+
+/*2 读取网关数据参数 */
+int GetNetworkGateway(onvif_NetworkGateway		      *pNetworkGateway);
+
+	
+/*设置网关数据参数*/
+int SetNetworkGateway(onvif_NetworkGateway		     *pNetworkGateway, BOOL isSave);
+
+
+/*3 读取DNS数据参数 */
+int GetDNSInformation(onvif_DNSInformation		     *pDNSInformation);
+	
+/* 设置DNS数据参数*/
+int SetDNSInformation(onvif_DNSInformation		    *pDNSInformation, BOOL isSave);
+
+
+/*4 读取网络协议数据参数 */
+int GetNetworkProtocols(onvif_NetworkProtocol	*pNetworkProtocol);
+	
+/* 设置网络协议数据参数*/
+int SetNetworkProtocols(onvif_NetworkProtocol	*pNetworkProtocol, BOOL isSave);
+
+void SystemReboot();
+
+void SetSystemFactoryDefault(int type /* 0:soft, 1:hard */);
+struct tm * GetSystemUTCTime();
+int sync_hwclock_tosys(); 
 
 
 #ifdef __cplusplus

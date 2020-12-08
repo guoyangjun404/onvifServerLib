@@ -117,15 +117,15 @@ ONVIF_RET onvif_SetSystemDateAndTime(SetSystemDateAndTime_REQ * p_req)
 		return ONVIF_ERR_InvalidTimeZone;
 	}
 
-	// todo : add set system date time code ...
-	
-
 	g_onvif_cfg.SystemDateTime.DateTimeType = p_req->SystemDateTime.DateTimeType;
 	g_onvif_cfg.SystemDateTime.DaylightSavings = p_req->SystemDateTime.DaylightSavings;
 	if (p_req->SystemDateTime.TimeZoneFlag && p_req->SystemDateTime.TimeZone.TZ[0] != '\0')
 	{
 		strcpy(g_onvif_cfg.SystemDateTime.TimeZone.TZ, p_req->SystemDateTime.TimeZone.TZ);
 	}
+	
+	// todo : add set system date time code ...
+	SetSystemDateTime(&p_req->SystemDateTime, &p_req->UTCDateTime, TRUE);
 
     // send notify message ...
     onvif_LastClockSynchronizationNotify();
@@ -135,16 +135,16 @@ ONVIF_RET onvif_SetSystemDateAndTime(SetSystemDateAndTime_REQ * p_req)
 
 ONVIF_RET onvif_SystemReboot()
 {
-	// todo : reboot system ...
-
     // send onvif bye message    
     sleep(3);
     onvif_bye();
+	// todo : reboot system ...
+	SystemReboot();
 
     // please comment the code below
     // send onvif hello message, just for test
-    sleep(3);
-    onvif_hello();
+    //sleep(3);
+    //onvif_hello();
     
 	return ONVIF_OK;
 }
@@ -160,9 +160,9 @@ ONVIF_RET onvif_SetSystemFactoryDefault(int type /* 0:soft, 1:hard */)
 
     // please note the following lines, just for test
     // send onvif hello message
-    sleep(3);
-    onvif_hello();
-	
+    //sleep(3);
+    //onvif_hello();
+	SetSystemFactoryDefault(type);
 	return ONVIF_OK;
 }
 
@@ -190,7 +190,8 @@ ONVIF_RET onvif_SetHostname(const char * name, BOOL fromdhcp)
 ONVIF_RET onvif_SetDNS(SetDNS_REQ * p_req)
 {
 	// todo : add set DNS code ...
-
+    SetDNSInformation(&p_req->DNSInformation, TRUE);
+	
 	g_onvif_cfg.network.DNSInformation.FromDHCP = p_req->DNSInformation.FromDHCP;
 
 	if (g_onvif_cfg.network.DNSInformation.FromDHCP == FALSE)
@@ -209,7 +210,8 @@ ONVIF_RET onvif_SetDNS(SetDNS_REQ * p_req)
 	else
 	{
 		// todo : get dns server from dhcp ...
-		
+		strcpy(g_onvif_cfg.network.DNSInformation.DNSServer[0], "8.8.8.8");
+		strcpy(g_onvif_cfg.network.DNSInformation.DNSServer[0], "114.114.114.114");
 	}
     
 	return ONVIF_OK;
@@ -218,6 +220,7 @@ ONVIF_RET onvif_SetDNS(SetDNS_REQ * p_req)
 ONVIF_RET onvif_SetNTP(SetNTP_REQ * p_req)
 {
 	// todo : add set NTP code ...
+	SetNTPInformation(&g_onvif_cfg.network.NTPInformation, TRUE);
 
 	g_onvif_cfg.network.NTPInformation.FromDHCP = p_req->NTPInformation.FromDHCP;
 
@@ -232,7 +235,7 @@ ONVIF_RET onvif_SetNTP(SetNTP_REQ * p_req)
     	// todo : get ntp server from dhcp ...
     	
     }
-    
+
 	return ONVIF_OK;
 }
 
@@ -271,7 +274,7 @@ ONVIF_RET onvif_SetNetworkProtocols(SetNetworkProtocols_REQ * p_req)
 #endif
 
 	// todo : add set network protocols code ...	
-
+	SetNetworkProtocols(&p_req->NetworkProtocol, TRUE);
 
 	if (p_req->NetworkProtocol.HTTPFlag)
 	{
@@ -302,11 +305,12 @@ ONVIF_RET onvif_SetNetworkProtocols(SetNetworkProtocols_REQ * p_req)
 
 ONVIF_RET onvif_SetNetworkDefaultGateway(SetNetworkDefaultGateway_REQ * p_req)
 {
-	// todo : add set network default gateway code ...
-
 	memcpy(g_onvif_cfg.network.NetworkGateway.IPv4Address, 
 	    p_req->IPv4Address, 
 	    sizeof(g_onvif_cfg.network.NetworkGateway.IPv4Address));
+
+	// todo : add set network default gateway code ...
+	SetNetworkGateway(&g_onvif_cfg.network.NetworkGateway, TRUE);
 
 	return ONVIF_OK;
 }
@@ -353,7 +357,8 @@ ONVIF_RET onvif_SetNetworkInterfaces(SetNetworkInterfaces_REQ * p_req)
     }
 
     // todo : add set network interfaces code ...
-
+    SetNetworkInterfaces(&p_req->NetworkInterface, TRUE);
+		
 	p_net_inf->NetworkInterface.Enabled = p_req->NetworkInterface.Enabled;
 
 	if (p_req->NetworkInterface.InfoFlag && p_req->NetworkInterface.Info.MTUFlag)
@@ -784,7 +789,7 @@ BOOL onvif_FirmwareUpgradeCheck(const char * buff, int len)
 	// todo : add the check code ...
 
     // the firmware length is too short
-    if (len < 100)
+    if (len < 1024)
     {
         return FALSE;
     }
@@ -798,12 +803,80 @@ BOOL onvif_FirmwareUpgradeCheck(const char * buff, int len)
   * buff : pointer the upload content
   * len  : the upload content length
   **/
-BOOL onvif_FirmwareUpgrade(const char * buff, int len)
+/*BOOL onvif_FirmwareUpgrade(const char * buff, int len)
 {
 	// todo : add the upgrade code ...
-
+    FILE *pfd = NULL;
+	pfd = fopen("/user/gpttemp", "wb");
+	fwrite(buff, 1, len, pfd);
+	fclose(pfd);
 	
 	return TRUE;
+}*/
+BOOL onvif_FirmwareUpgrade(const char * buff, int len)
+{ 
+	// todo : add the upgrade code ... 
+	FILE *pfd = NULL;
+	BOOL isOK = FALSE;
+	char  *Content_Type = NULL,*nchrBegin = NULL, *nchrEnd = NULL; 
+	char *pbuffer = NULL;
+	char *endneedle = NULL; 
+	int   endlength = 0, firstlen = 0, length = 0;
+	int i =0;
+	
+	if (NULL == buff) {
+		return FALSE;
+	}
+	
+	pfd = fopen("/user/gpttemp", "wb+");
+	if(NULL==pfd) { 
+		onvif_print("############open error\n",	errno);  
+		return FALSE; 
+	} 
+	
+	pbuffer= buff;
+	//Content-Type: application/octet-stream
+	Content_Type = strcasestr(pbuffer, "Content-Type");
+	if (NULL == Content_Type) {
+		isOK = FALSE;
+		onvif_print("############NULL == Content-Type\n"); 
+		goto _EXIT1;
+	}
+	
+	nchrBegin = strstr(Content_Type, "\r\n\r\n");  
+	if (NULL == nchrBegin) {
+		isOK = FALSE;
+		onvif_print("############NULL == nchrBegin\n"); 
+		goto _EXIT1;
+	}
+	
+	firstlen = (nchrBegin + 4) - pbuffer;
+	nchrEnd = pbuffer + (len - 200);
+	for (i = 0; i < 200;i++) {
+		if (nchrEnd[i]== 0xD && nchrEnd[i+1]== 0xA) {
+			break;
+		}
+	}
+	endlength = 200 - i;
+	length	= len - endlength - firstlen;
+	onvif_print("firstlen=%d, endlength=%d, length=%d\n",firstlen, endlength, length);  
+
+	if (fwrite(nchrBegin+4, 1, length,	pfd) != length) 
+	{  
+		isOK = FALSE;
+		goto _EXIT1;
+	} 
+	onvif_print("xxx ============== save ok ==============\n"); 
+	isOK = TRUE;
+
+_EXIT1:
+
+	if (pfd)
+	{
+		fclose(pfd); 
+		pfd = NULL;
+	}
+	return isOK;
 }
 
 /***
@@ -812,7 +885,25 @@ BOOL onvif_FirmwareUpgrade(const char * buff, int len)
   **/
 void onvif_FirmwareUpgradePost()
 {
-	
+	if (0 != access("/user/upload.sh", F_OK)) {
+		FILE *pConf = NULL;
+		pConf = fopen("/user/upload.sh", "w+");
+		if(pConf == NULL)
+		{
+			return ;
+		}
+		else
+		{  
+			fprintf(pConf, "mv /user/gpttemp  /user/gpt.tar.gz\n");
+			fprintf(pConf, "if [ -d \"/user/gpt\" ] ; then\n");
+			fprintf(pConf, "	rm /user/gpt -rf\n");
+			fprintf(pConf, "fi\n");
+			fprintf(pConf, "cd /user\n");
+			fprintf(pConf, "tar xf gpt.tar.gz\n");
+			fclose(pConf);
+		}
+	}
+	system_ex("/user/upload.sh &");
 }
 
 BOOL onvif_StartSystemRestore(const char * lip, uint32 lport, StartSystemRestore_RES * p_res)

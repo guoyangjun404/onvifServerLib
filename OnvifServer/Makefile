@@ -1,7 +1,7 @@
 ################OPTION###################
 
-# PREFIX = arm-himix200-linux-
-PREFIX = 
+PREFIX = arm-himix200-linux-
+# PREFIX = 
 
 CCOMPILE = $(PREFIX)gcc
 CPPCOMPILE =  $(PREFIX)g++
@@ -46,7 +46,7 @@ OBJS = bm/word_analyse.o bm/util.o bm/sys_os.o bm/sys_log.o bm/sys_buf.o bm/ppst
        onvif/onvif_cfg.o onvif/onvif_deviceio.o onvif/onvif_media2.o onvif/onvif_thermal.o \
        onvif/onvif_credential.o onvif/onvif_accessrules.o onvif/onvif_schedule.o onvif/onvif_receiver.o \
 	   onvif_main.o	\
-	  ../camCtl/pelco_ptz/ptz.o \
+	  ../camCtl/pelco_ptz/ptz.o ../camCtl/ntp_conf.o\
 	   ../camCtl/visca/libvisca.o ../camCtl/visca/libvisca_posix.o ../camCtl/visca/rw_config.o ../camCtl/visca/visca_api.o \
 	   ../camCtl/set_config.o \
 	   ../camCtl/cfg_file.o \
@@ -81,7 +81,7 @@ all: clean $(OUTPUT)
 	$(CPPCOMPILE) -c -o $*.o $(COMPILEOPTION) $(INCLUDEDIR)  $*.cpp
 	
 .cc.o:
-	$(CCOMPILE) -c -o $*.o $(COMPILEOPTION) $(INCLUDEDIR)  $*.cpp
+	$(CPPCOMPILE) -c -o $*.o $(COMPILEOPTION) $(INCLUDEDIR)  $*.cpp
 
 .cxx.o:
 	$(CPPCOMPILE) -c -o $*.o $(COMPILEOPTION) $(INCLUDEDIR)  $*.cpp
@@ -90,7 +90,7 @@ all: clean $(OUTPUT)
 	$(CCOMPILE) -c -o $*.o $(COMPILEOPTION) $(INCLUDEDIR) $*.c
 
 .C.o:
-	$(CPPCOMPILE) -c -o $*.o $(COMPILEOPTION) $(INCLUDEDIR) $*.C	
+	$(CCOMPILE) -c -o $*.o $(COMPILEOPTION) $(INCLUDEDIR) $*.C	
 
 .ecpp.C:
 	$(ESQL) -e $(ESQL_OPTION) $(INCLUDEDIR) $*.ecpp 

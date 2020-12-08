@@ -102,19 +102,24 @@ _VISCA_get_packet(VISCAInterface_t *iface)
 {
     int pos=0;
     int bytes_read;
-
+	int i;
     // wait for message
     ioctl(iface->port_fd, FIONREAD, &(iface->bytes));
-    for(int i=0;i<300;i++)
+    for(i=0;i<100;i++)
     {
-    //while (iface->bytes==0) {
 	  if(iface->bytes!=0)
           break;
 	ioctl(iface->port_fd, FIONREAD, &(iface->bytes));
 
-  usleep(10000);
-  printf("%d visca wait data\n",i);
+  	usleep(10000);
+  
     }
+
+	if(i>=100)
+		{
+			printf("visca wait data fail\n");
+			return VISCA_FAILURE;
+		}
 
     // get octets one by one
     bytes_read=read(iface->port_fd, iface->ibuf, 1);
