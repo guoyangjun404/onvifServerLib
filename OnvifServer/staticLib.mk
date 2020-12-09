@@ -35,7 +35,7 @@ INCLUDEDIR += -I../camCtl/pelco_ptz
 INCLUDEDIR += -I../camCtl/visca
 
 LINK = $(PREFIX)g++
-LINKOPTION = -g -o onvifserver
+LINKOPTION = -o onvifserver
 LIBDIRS = -L./openssl/lib/linux -L./libical/lib/linux
 OBJS = bm/word_analyse.o bm/util.o bm/sys_os.o bm/sys_log.o bm/sys_buf.o bm/ppstack.o bm/base64.o \
        bm/sha1.o bm/linked_list.o bm/hqueue.o bm/rfc_md5.o bm/xml_node.o bm/hxml.o http/http_srv.o \

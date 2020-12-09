@@ -135,7 +135,7 @@ static int LogDBG_Utils(unsigned char ucLevel, const char* fmt, ...)
     va_end(ap);
 
 	LtyLogOut(LOG_INFO, "%s\n", pStContext.pLogBuf);
-	struct tm NowTime; 
+	/*struct tm NowTime; 
 	char TimeBuf[1024];   
 	struct timeval structTimeSpec;
     gettimeofday(&structTimeSpec, NULL);
@@ -143,9 +143,9 @@ static int LogDBG_Utils(unsigned char ucLevel, const char* fmt, ...)
 	snprintf(TimeBuf, sizeof(TimeBuf), "[%d-%02d-%02d %02d:%02d:%02d] %s\n", 
 			 1900 + NowTime.tm_year, 1 + NowTime.tm_mon, NowTime.tm_mday, 
 			 NowTime.tm_hour, NowTime.tm_min, NowTime.tm_sec, pStContext.pLogBuf); 
-	write(stdout, TimeBuf, strlen(TimeBuf)-1);
+	write(stdout, TimeBuf, strlen(TimeBuf)-1);*/
 
-	//printf("%s\n", pStContext.pLogBuf);
+	printf("%s\n", pStContext.pLogBuf);
 	return 0;
 }
 

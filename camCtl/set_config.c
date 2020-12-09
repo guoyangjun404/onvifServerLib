@@ -477,6 +477,11 @@ int opt_UTCTimeToSystemTime(onvif_DateTime *pUTCDateTime)
 		pUTCDateTime->Date.Year, pUTCDateTime->Date.Month,
 		pUTCDateTime->Date.Day, pUTCDateTime->Time.Hour,
 		pUTCDateTime->Time.Minute, pUTCDateTime->Time.Second);
+	system_ex("date -s %04d%02d%02d%02d%02d.%02d", 
+		pUTCDateTime->Date.Year, pUTCDateTime->Date.Month,
+		pUTCDateTime->Date.Day, pUTCDateTime->Time.Hour,
+		pUTCDateTime->Time.Minute, pUTCDateTime->Time.Second);
+	system_ex("hwclock -w;hwclock -s");
 }
 
 struct tm * GetSystemUTCTime()
@@ -504,12 +509,6 @@ void set_system_clock_timezone(onvif_DateTime *pUTCDateTime, int utc)
 		pUTCDateTime->Time.Minute, pUTCDateTime->Time.Second);
 	
 	opt_UTCTimeToSystemTime(pUTCDateTime);
-	
-	system_ex("date -s %04d%02d%02d%02d%02d.%02d", 
-		pUTCDateTime->Date.Year, pUTCDateTime->Date.Month,
-		pUTCDateTime->Date.Day, pUTCDateTime->Time.Hour,
-		pUTCDateTime->Time.Minute, pUTCDateTime->Time.Second);
-	system_ex("hwclock -w;hwclock -s");
 	
 #if 0
 	struct tm p;
